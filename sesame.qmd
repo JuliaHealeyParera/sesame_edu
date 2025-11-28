@@ -20,6 +20,23 @@ Our objectives allow us to assess both the overall effectiveness of Sesame Stree
 
 **2.1 Exploratory Data Analysis**
 
+```{r}
+#| echo: False 
+#| label: load-packages
+#| message: False 
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+library(knitr)
+```
+
+```{r}
+#| echo: False 
+#| label: load-data
+sesame <- read.csv("sesame.csv")
+glimpse(sesame)
+```
+
 **2.2 Model Fitting**
 
 **3. Results**
