@@ -74,6 +74,38 @@ sesame |>
   )
 ```
 
+```{r}
+#| label: univariate-eda
+# boxplot distribution of all improvement scores
+sesame |>
+  select(
+    improve_body, 
+    improve_let, 
+    improve_form, 
+    improve_numb, 
+    improve_relat, 
+    improve_clasf
+  ) |>
+  pivot_longer(cols = everything()) |>
+  ggplot(aes(x = name, y = value)) +
+  geom_boxplot() +
+  labs(title = "Distributions of All Improvement Scores",
+       x = "Skill Area",
+       y = "Score Improvement")
+
+# histogram of improvement score for letters test
+ggplot(sesame, aes(improve_let)) +
+  geom_histogram(bins = 25) +
+  labs(title = "Distribution of Letter Score Improvement",
+       x = "Improvement (Post - Pre)",
+       y = "Count")
+```
+
+```{r}
+#| label: bivariate-eda-interactions
+
+```
+
 **2.2 Model Fitting**
 
 **3. Results**
