@@ -10,6 +10,12 @@ editor: visual
 
 **1. Introduction**
 
+Promoting early childhood learning should be a key priority in ensuring the quality of education and quality of life for individuals and families across the United States. Designed primarily for preschool-aged children, Sesame Street is one of the most widely studied early education television programs that focuses on foundational learning skills like early literacy and numeracy. This study analyzes trends in the Sesame Street viewing habits, socioeconomic background, and pre- and post-test performance of children in the U.S. aged 3-5 to explore whether exposure to educational television is associated with significant improvements in early education, and whether these effects differ across socioeconomic groups. Understanding these trends is not only important to families who hope to supplement their child's learning, but is also important to policymakers, media producers, and teachers in informing effective methods to design television series and curriculum or learning strategies to best support early education and potentially reduce early learning gaps caused by socioeconomic differences.
+
+Our goals are to (i) evaluate which factors (e.g. age, socioeconomic status, and viewing frequency) are most influential in improving test scores, (ii) understand how socioeconomic status impacts preschool learning improvement and make predictions about these impacts, (iii) extend our methods to better understand the role of educational television in early childhood education using modern day educational examinations, and (iv) to apply our findings to inform future educational resource and curriculum design. We hypothesize that higher socioeconomic status and higher viewing frequency of Sesame Street are associated with greater increases in various tested areas.
+
+Our objectives allow us to assess both the overall effectiveness of Sesame Street and how its impact may differ across populations. Our intended audiences benefit from both the statistical findings and the practical insights of our study. We hope that findings from this study are used in the future to better serve education in underserved communities, supporting efforts to improve education accessibility and equity, and overall, we hope this project contributes to understanding how accessible educational resources can complement formal preschool education.
+
 **2. Methodology**
 
 **2.1 Exploratory Data Analysis**
