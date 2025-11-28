@@ -24,6 +24,7 @@ Our objectives allow us to assess both the overall effectiveness of Sesame Stree
 #| echo: False 
 #| label: load-packages
 #| message: False 
+library(tidyverse)
 library(ggplot2)
 library(dplyr)
 library(patchwork)
@@ -31,10 +32,46 @@ library(knitr)
 ```
 
 ```{r}
-#| error: True
+#| echo: False 
 #| label: load-data
 sesame <- read.csv("sesame.csv")
 glimpse(sesame)
+```
+
+```{r}
+#| label: data-cleaning
+colnames(sesame)
+
+sesame <- sesame |> 
+  drop_na() |>
+  mutate(
+    improve_body = postbody - prebody,
+    improve_let = postlet - prelet,
+    improve_form = postform - preform,
+    improve_numb = postnumb - prenumb,
+    improve_relat = postrelat - prerelat,
+    improve_clasf = postclasf - preclasf
+  )
+
+# summary statistics
+summary(sesame$improve_body)
+summary(sesame$improve_let)
+summary(sesame$improve_form)
+summary(sesame$improve_numb)
+summary(sesame$improve_relat)
+summary(sesame$improve_clasf)
+
+# mean improvement by viewing category
+sesame |>
+  group_by(viewcat) |>
+  summarize(
+    body = mean(improve_body),
+    letter = mean(improve_let),
+    form = mean(improve_form),
+    number = mean(improve_numb),
+    relation = mean(improve_relat),
+    classify = mean(improve_clasf)
+  )
 ```
 
 **2.2 Model Fitting**
