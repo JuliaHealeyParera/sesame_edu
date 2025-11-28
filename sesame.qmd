@@ -1,0 +1,31 @@
+---
+title: "Sesame Final Project Report"
+authors: "Julia Healey-Parera, Shelly Han, Angela Chen, Ayse Celebi, Amy Xu"
+date: "November 27, 2025"
+format: html
+editor: visual
+---
+
+## Sta325 Final Project:
+
+**1. Introduction**
+
+**2. Methodology**
+
+**2.1 Exploratory Data Analysis**
+
+**2.2 Model Fitting**
+
+**3. Results**
+
+**3.1 Final Selected Models**
+
+**3.3 Scientific Interpretation**
+
+**4. Conclusion**
+
+\pagebreak
+
+**Sources**
+
+**Appendix**
