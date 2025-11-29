@@ -168,6 +168,10 @@ sesame |>
   kable(digits = 2)
 ```
 
+The largest average percent improvements occurred in the tests for forms (19.06%), letters (18.63%), and numbers (16.95%), indicating the **strongest learning growth in forms, letters and numbers after Sesame Street exposure**. In contrast, there were only modest improvements in body knowledge (12.06%) and classification skills (14.60%) test scores and weak improvement in relational terms test scores (10.25%). All test had large negative minimums (as low as -64.81%) and high maximums (all at least 58.33%), indicating that there was greater variability in the improvements or lack therof in these tested areas for various students.
+
+The mean improvement by viewing category table shows a **consistently strong positive relationship between viewing frequency and improvement across all test areas**, suggesting that Sesame Street exposure is associated with larger learning improvements. As viewing frequency increased from 1 to 4, **letter test scores showed the greatest increase** in percent improvement on average (from 4.28% to 27.75%).
+
 ```{r}
 #| echo: False
 #| label: univariate-eda
@@ -229,6 +233,12 @@ hist_peabody
 hist_let / hist_numb
 ```
 
+Distributions of percent improvement across the 6 test areas showed **positive median improvement percentages for all 6 test areas**, with the largest median improvements *and* the greatest variability observed for the tests on **letters and numbers**. Most children demonstrated learning gains, but various outliers across almost all tests indicate variability in children's responses to Sesame Street exposure.
+
+The distribution of Peabody vocabulary scores is **right-skewed**, indicating that most children are clustered in the lower score range and a smaller proportion of students achieve high Peabody vocabulary scores.
+
+The distributions for letter and number test score improvements were both centered at values slightly above zero, indicating improvements on average, but both tests (especially for numbers) showed negative outliers, showing how some students experienced test score drops in numbers and letters after Sesame Street.
+
 ```{r}
 #| echo: False
 #| label: bivariate-eda-interactions
@@ -241,12 +251,16 @@ ggplot(sesame, aes(
 )) +
   geom_boxplot() +
   labs(
-    title = "Interaction of Treatment (Viewing Category) and SES on Letter Improvement",
-    x = "Viewing Category (Treatment)",
+    title = "Interaction of Viewing Category and Educational Setting on Letter Improvement",
+    x = "Viewing Category",
     y = "Letter Improvement",
-    fill = "Educational Setting (SES)"
+    fill = "Educational Setting"
   )
 ```
+
+Letter test score improvement increases consistently with viewing frequency for viewing at home (setting=1), but for viewing at a school setting (setting=2), letter score test percent improvement decreased at the highest viewing frequency, though not significantly. At **low-to-moderate viewing categories, viewing at school resulted in greater median letter test score improvements**, which at the highest viewing frequency, viewing at school resulted in a lower improvement than viewing at home; this could suggest that **too high of a viewing frequency in a school setting is actually detrimental to early learning**. Lastly, variability generally increases with higher viewing categories, showing that greater levels of Sesame Street exposure can lead to a larger variety of test outcomes for children.
+
+Overall, the EDA shows that **Sesame Street exposure is positively associated with learning gains**, with the **largest improvements in forms, letters, and numbers**. **Viewing frequency displayed a positive relationship** with higher exposure linked to larger average improvements, especially for letters, though gains varied by setting at the highest viewing level. **All outcomes showed substantial variability and notable negative outliers**, indicating that while most children benefited, responses differed widely across individuals.
 
 **2.2 Model Fitting**
 
