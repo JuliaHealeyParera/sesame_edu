@@ -20,6 +20,42 @@ Our objectives allow us to assess both the overall effectiveness of Sesame Stree
 
 **2.1 Exploratory Data Analysis**
 
+[Variables of Interest]{.underline}
+
+Pre- and Post-tests in the following areas:
+
+-   `body`: body parts (scores range from 0-32)
+
+-   `let`: letters (scores range from 0-58)
+
+-   `form`: forms (scores range from 0-20)
+
+-   `numb`: numbers (scores range from 0-54)
+
+-   `relat`: relational terms (scores range from 0-17)
+
+-   `clasf`: classification skills (scores range from 0-24)
+
+Since each test had a different range of scores, we standardized all pre- and post-test scores to be reported as a percentage of the total possible score, and we created a new *improvement* variable (e.g. `improve_body`, `improve_let`, etc.) for each of the tests to measure the percent improvement in each test area, which are our **Response Variables**.
+
+**Covariates**:
+
+-   `sex`: male = 1, female = 2
+
+-   `age`: age in months
+
+-   `peabody`: mental age score obtained from administration of the Peabody Picture Vocabulary test as a pretest measure of vocabulary maturity
+
+-   `setting`: setting in which Sesame Street was viewed, 1=home 2=school
+
+**Primary Predictor Variables**:
+
+-   `viewenc`: treatment condition, 1=child encouraged to watch, 2=child not encouraged to watch
+
+-   `viewcat`: frequency of viewing, 1=rarely watched the show, 2=once or twice a week, 3=three to five times a week, 4=watched the show on average more than 5 times a week
+
+-   `site`: 1 =Three to five year old disadvantaged children from inner city areas in various parts of the country, 2 = Four year old advantaged suburban children, 3 = Advantaged rural children, 4 = Disadvantaged rural children, 5 = Disadvantaged Spanish speaking children.
+
 ```{r}
 #| echo: False 
 #| label: load-packages
