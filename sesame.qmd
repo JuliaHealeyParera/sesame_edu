@@ -47,14 +47,47 @@ colSums(is.na(sesame))
 sum(!complete.cases(sesame))
 nrow(sesame)
 
+# standardizing test scores
+max_scores <- c(
+  body  = 32,
+  let   = 58,
+  form  = 20,
+  numb  = 54,
+  relat = 17, 
+  clasf = 24
+)
+
+# convert scores to percent
 sesame <- sesame |>
   mutate(
-    improve_body = postbody - prebody,
-    improve_let = postlet - prelet,
-    improve_form = postform - preform,
-    improve_numb = postnumb - prenumb,
-    improve_relat = postrelat - prerelat,
-    improve_clasf = postclasf - preclasf
+    prebody_p  = 100 * prebody  / max_scores["body"],
+    postbody_p = 100 * postbody / max_scores["body"],
+
+    prelet_p   = 100 * prelet   / max_scores["let"],
+    postlet_p  = 100 * postlet  / max_scores["let"],
+
+    preform_p  = 100 * preform  / max_scores["form"],
+    postform_p = 100 * postform / max_scores["form"],
+
+    prenumb_p  = 100 * prenumb  / max_scores["numb"],
+    postnumb_p = 100 * postnumb / max_scores["numb"],
+
+    prerelat_p  = 100 * prerelat  / max_scores["relat"],
+    postrelat_p = 100 * postrelat / max_scores["relat"],
+    
+    preclasf_p  = 100 * preclasf  / max_scores["clasf"],
+    postclasf_p = 100 * postclasf / max_scores["clasf"]
+  )
+
+# create variables for percent improvement for each test
+sesame <- sesame |>
+  mutate(
+    improve_body  = postbody_p  - prebody_p,
+    improve_let   = postlet_p   - prelet_p,
+    improve_form  = postform_p  - preform_p,
+    improve_numb  = postnumb_p  - prenumb_p,
+    improve_relat = postrelat_p - prerelat_p,
+    improve_clasf = postclasf_p - preclasf_p
   )
 ```
 
@@ -83,7 +116,7 @@ sesame |>
     Q3 = quantile(Improvement, 0.75),
     Max = max(Improvement)
   ) |>
-  kable()
+  kable(digits = 2)
 
 # mean improvement by viewing category
 sesame |>
@@ -96,7 +129,7 @@ sesame |>
     relation = mean(improve_relat),
     classify = mean(improve_clasf)
   ) |> 
-  kable()
+  kable(digits = 2)
 ```
 
 ```{r}
