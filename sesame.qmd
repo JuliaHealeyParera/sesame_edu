@@ -32,18 +32,22 @@ library(knitr)
 ```
 
 ```{r}
-#| echo: False 
+#| include: False
 #| label: load-data
 sesame <- read.csv("sesame.csv")
 glimpse(sesame)
 ```
 
 ```{r}
+#| include: False
 #| label: data-cleaning
 colnames(sesame)
 
-sesame <- sesame |> 
-  drop_na() |>
+colSums(is.na(sesame))
+sum(!complete.cases(sesame))
+nrow(sesame)
+
+sesame <- sesame |>
   mutate(
     improve_body = postbody - prebody,
     improve_let = postlet - prelet,
@@ -52,14 +56,34 @@ sesame <- sesame |>
     improve_relat = postrelat - prerelat,
     improve_clasf = postclasf - preclasf
   )
+```
 
+```{r}
+#| echo: False
+#| label: summary-stats-eda
 # summary statistics
-summary(sesame$improve_body)
-summary(sesame$improve_let)
-summary(sesame$improve_form)
-summary(sesame$improve_numb)
-summary(sesame$improve_relat)
-summary(sesame$improve_clasf)
+sesame |>
+  select(
+    improve_body,
+    improve_let,
+    improve_form,
+    improve_numb,
+    improve_relat,
+    improve_clasf
+  ) |>
+  pivot_longer(cols = everything(),
+               names_to = "Test",
+               values_to = "Improvement") |>
+  group_by(Test) |>
+  summarize(
+    Min = min(Improvement),
+    Q1 = quantile(Improvement, 0.25),
+    Median = median(Improvement),
+    Mean = mean(Improvement),
+    Q3 = quantile(Improvement, 0.75),
+    Max = max(Improvement)
+  ) |>
+  kable()
 
 # mean improvement by viewing category
 sesame |>
@@ -71,10 +95,12 @@ sesame |>
     number = mean(improve_numb),
     relation = mean(improve_relat),
     classify = mean(improve_clasf)
-  )
+  ) |> 
+  kable()
 ```
 
 ```{r}
+#| echo: False
 #| label: univariate-eda
 # boxplot distribution of all improvement scores
 sesame |>
@@ -89,21 +115,68 @@ sesame |>
   pivot_longer(cols = everything()) |>
   ggplot(aes(x = name, y = value)) +
   geom_boxplot() +
+  coord_flip() +
   labs(title = "Distributions of All Improvement Scores",
        x = "Skill Area",
        y = "Score Improvement")
 
+# histogram of peabody distribution
+hist_peabody <- ggplot(sesame, aes(peabody)) +
+  geom_histogram(
+    bins = 25,
+    fill = "thistle3",
+    color = "dimgrey",
+    alpha = 0.8
+  ) +
+  labs(
+    title = "Distribution of Peabody Vocabulary Scores",
+    x = "Peabody Score",
+    y = "Count"
+  )
+
 # histogram of improvement score for letters test
-ggplot(sesame, aes(improve_let)) +
-  geom_histogram(bins = 25) +
+hist_let <- ggplot(sesame, aes(improve_let)) +
+  geom_histogram(
+    bins = 25, 
+    fill = "lightskyblue3",
+    color = "dimgrey"
+  ) +
   labs(title = "Distribution of Letter Score Improvement",
        x = "Improvement (Post - Pre)",
        y = "Count")
+
+# histogram of improvement score for numbers test
+hist_numb <- ggplot(sesame, aes(improve_numb)) +
+  geom_histogram(
+    bins = 25, 
+    fill = "lightskyblue3",
+    color = "dimgrey"
+  ) +
+  labs(title = "Distribution of Numbers Score Improvement",
+       x = "Improvement (Post - Pre)",
+       y = "Count")
+
+hist_peabody 
+hist_let / hist_numb
 ```
 
 ```{r}
+#| echo: False
 #| label: bivariate-eda-interactions
 
+# interaction between viewcat and setting on improve_let
+ggplot(sesame, aes(
+  x = factor(viewcat),
+  y = improve_let,
+  fill = factor(setting)
+)) +
+  geom_boxplot() +
+  labs(
+    title = "Interaction of Treatment (Viewing Category) and SES on Letter Improvement",
+    x = "Viewing Category (Treatment)",
+    y = "Letter Improvement",
+    fill = "Educational Setting (SES)"
+  )
 ```
 
 **2.2 Model Fitting**
