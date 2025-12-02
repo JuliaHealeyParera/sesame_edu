@@ -65,6 +65,7 @@ library(ggplot2)
 library(dplyr)
 library(patchwork)
 library(knitr)
+library(rlang)
 ```
 
 ```{r}
@@ -263,6 +264,123 @@ Letter test score improvement increases consistently with viewing frequency for 
 Overall, the EDA shows that **Sesame Street exposure is positively associated with learning gains**, with the **largest improvements in forms, letters, and numbers**. **Viewing frequency displayed a positive relationship** with higher exposure linked to larger average improvements, especially for letters, though gains varied by setting at the highest viewing level. **All outcomes showed substantial variability and notable negative outliers**, indicating that while most children benefited, responses differed widely across individuals.
 
 **2.2 Model Fitting**
+
+```{r}
+# Transformations 
+
+sesame_edit <- sesame |> 
+  mutate(
+    # For each response, rescale (add 1 and divide by 2) to model with logit
+    body_betatransf = (improve_body/100 + 1) / 2, 
+    let_betatransf = (improve_let/100 + 1) / 2, 
+    form_betatransf = (improve_form/100 + 1) / 2, 
+    numb_betatransf = (improve_numb/100 + 1) / 2,
+    relat_betatransf = (improve_relat/100 + 1) / 2, 
+    clasf_betatransf = (improve_clasf/100 + 1) / 2,
+    # Alt: for each response, rescale to approximate normal dist for tobit model
+    # Indepedent variable transformations
+    peabody_log = log(peabody),
+    viewcat = factor(
+      case_when(viewcat == 1 ~ 'rare', 
+                viewcat == 2 ~ 'once_twice', 
+                viewcat == 3 ~ 'three_five', 
+                viewcat == 4 ~ 'over_five'), 
+      levels = c('rare','once_twice','three_five', 'over_five')),
+    site = factor(
+      case_when(site == 1 ~ 'disadv_city', 
+                site == 2 ~ 'adv_suburb', 
+                site == 3 ~ 'adv_rural', 
+                site == 4 ~ 'disadv_rural', 
+                site == 5 ~ 'disadv_span'), 
+      levels = c('disadv_span','disadv_city','disadv_rural','adv_rural','adv_suburb')), 
+    sex = if_else(sex == 1, 'male', 'female'), 
+    setting = factor(if_else(setting == 1, 'home', 'school'), levels = c('home', 'school')), 
+    viewenc = if_else(viewenc == 1, 'encouraged', 'not_encouraged')
+    )
+
+write.csv(sesame_edit, 'sesame_edit.csv')
+```
+
+Transformations:
+
+-   peabody score is left-skewed, so log-transform
+
+-   treat viewcat as ordinal variable
+
+-   reorder site and treat as ordinal in this order
+
+    -   5
+
+    -   1
+
+    -   4
+
+    -   3
+
+    -   2
+
+-   rename levels of sex, setting, and viewenc
+
+```{r}
+# transformed response variables 
+resp <- c("body_betatransf","let_betatransf","form_betatransf",
+          "numb_betatransf","relat_betatransf","clasf_betatransf")
+
+# starter formula for body (predictors) extraction to create all formulas
+# start with all main effects and pairwise interaction terms, then perform selection afterwards
+form_body <- as.formula(body_betatransf ~ la(site, type = 'single') + la(sex, type = 'single') + la(age, type = 'single') + la(viewcat, type = 'single') + la(setting, type = 'single') + la(viewenc, type = 'single') + la(peabody_log, type = 'single') + la(site : sex, type = 'single') + la(site : age, type = 'single') + la(site : viewcat, type = 'single') + la(site : viewenc, type = 'single') + la(site : peabody_log, type = 'single') + la(sex : age, type = 'single') + la(sex : viewcat, type = 'single') + la(sex : setting, type = 'single') + la(sex : viewenc, type = 'single') + la(sex : peabody_log, type = 'single') + la(age : viewcat, type = 'single') + la(age : setting, type = 'single') + la(age : viewenc, type = 'single') + + la(viewcat : setting, type = 'single') + la(viewcat : viewenc, type = 'single') + la(viewcat : peabody_log, type = 'single') + la(setting : viewenc, type = 'single') + la(setting : peabody_log, type = 'single') + la(viewenc : peabody_log, type = 'single'))
+
+rhs_expr <- f_rhs(form_body)
+formula_list <- list()
+
+for (response_name in resp) {
+  # take response_name string and make object for injection
+  lhs_sym <- sym(response_name)
+  
+  new_formula <- new_formula(
+    lhs = lhs_sym, 
+    rhs = rhs_expr
+  )
+  formula_list[[response_name]] <- new_formula
+}
+
+mod <- bamlss(
+    formula_list[[1]], 
+    family = "beta", 
+    data = sesame_edit, 
+    optimizer = opt_lasso,
+    criterion = "BIC", 
+    nlambda = 100, 
+    multiple = FALSE)
+```
+
+```{r}
+#| eval: false 
+
+model_list <- list()
+
+for (curr_formula in formula_list) {
+  print(curr_formula)
+  currmod <- bamlss(
+    curr_formula, 
+    family = "beta", 
+    data = sesame_edit, 
+    optimizer = opt_lasso,
+    criterion = "BIC", 
+    nlambda = 100, 
+    multiple = FALSE)
+  
+  currresponse <- f_lhs(curr_formula)
+  model_list[[currresponse]] <- currmod
+}
+
+saveRDS(model_list[[1]], file = "models/initial/body_betamod.rds")
+saveRDS(model_list[[2]], file = "models/initial/letters_betamod.rds")
+saveRDS(model_list[[3]], file = "models/initial/form_betamod.rds")
+saveRDS(model_list[[4]], file = "models/initial/numb_betamod.rds")
+saveRDS(model_list[[5]], file = "models/initial/relat_betamod.rds")
+saveRDS(model_list[[6]], file = "models/initial/clasf_betamod.rds")
+```
 
 **3. Results**
 
