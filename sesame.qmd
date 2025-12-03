@@ -328,7 +328,7 @@ resp <- c("body_betatransf","let_betatransf","form_betatransf",
 
 # starter formula for body (predictors) extraction to create all formulas
 # start with all main effects and pairwise interaction terms, then perform selection afterwards
-form_body <- as.formula(body_betatransf ~ la(site, type = 'single') + la(sex, type = 'single') + la(age, type = 'single') + la(viewcat, type = 'single') + la(setting, type = 'single') + la(viewenc, type = 'single') + la(peabody_log, type = 'single') + la(site : sex, type = 'single') + la(site : age, type = 'single') + la(site : viewcat, type = 'single') + la(site : viewenc, type = 'single') + la(site : peabody_log, type = 'single') + la(sex : age, type = 'single') + la(sex : viewcat, type = 'single') + la(sex : setting, type = 'single') + la(sex : viewenc, type = 'single') + la(sex : peabody_log, type = 'single') + la(age : viewcat, type = 'single') + la(age : setting, type = 'single') + la(age : viewenc, type = 'single') + + la(viewcat : setting, type = 'single') + la(viewcat : viewenc, type = 'single') + la(viewcat : peabody_log, type = 'single') + la(setting : viewenc, type = 'single') + la(setting : peabody_log, type = 'single') + la(viewenc : peabody_log, type = 'single'))
+form_body <- as.formula(body_betatransf ~ la(site, type = 'single') + la(sex, type = 'single') + la(age, type = 'single') + la(viewcat, type = 'single') + la(setting, type = 'single') + la(viewenc, type = 'single') + la(peabody_log, type = 'single') + la(site : sex, type = 'single') + la(site : age, type = 'sing le') + la(site : viewcat, type = 'single') + la(site : viewenc, type = 'single') + la(site : peabody_log, type = 'single') + la(sex : age, type = 'single') + la(sex : viewcat, type = 'single') + la(sex : setting, type = 'single') + la(sex : viewenc, type = 'single') + la(sex : peabody_log, type = 'single') + la(age : viewcat, type = 'single') + la(age : setting, type = 'single') + la(age : viewenc, type = 'single') + + la(viewcat : setting, type = 'single') + la(viewcat : viewenc, type = 'single') + la(viewcat : peabody_log, type = 'single') + la(setting : viewenc, type = 'single') + la(setting : peabody_log, type = 'single') + la(viewenc : peabody_log, type = 'single'))
 
 rhs_expr <- f_rhs(form_body)
 formula_list <- list()
@@ -343,19 +343,12 @@ for (response_name in resp) {
   )
   formula_list[[response_name]] <- new_formula
 }
-
-mod <- bamlss(
-    formula_list[[1]], 
-    family = "beta", 
-    data = sesame_edit, 
-    optimizer = opt_lasso,
-    criterion = "BIC", 
-    nlambda = 100, 
-    multiple = FALSE)
 ```
 
 ```{r}
 #| eval: false 
+
+##### DO NOT RUN THIS CODE CHUNK -- takes roughly 20 minutes to train mods ######
 
 model_list <- list()
 
@@ -380,6 +373,137 @@ saveRDS(model_list[[3]], file = "models/initial/form_betamod.rds")
 saveRDS(model_list[[4]], file = "models/initial/numb_betamod.rds")
 saveRDS(model_list[[5]], file = "models/initial/relat_betamod.rds")
 saveRDS(model_list[[6]], file = "models/initial/clasf_betamod.rds")
+```
+
+```{r}
+base_mod <- as.formula(body_betatransf ~ 
+                         # main effects 
+                         la(site, type = 'single') + 
+                         la(sex, type = 'single') + 
+                         la(age, type = 'single') + 
+                         la(viewcat, type = 'single') + 
+                         la(setting, type = 'single') + 
+                         la(viewenc, type = 'single') + 
+                         la(peabody_log, type = 'single') + 
+                         # univerally significant interactions
+                         la(site : peabody_log, type = 'single') + 
+                         la(sex : setting, type = 'single') + 
+                         la(sex : viewenc, type = 'single') + 
+                         la(age : viewcat, type = 'single') + 
+                         la(age : setting, type = 'single') + 
+                         la(age : peabody_log, type = 'single') + 
+                         la(setting : peabody_log, type = 'single') + 
+                         la(viewenc : peabody_log, type = 'single')
+                       )
+  
+body_mod <- update(base_mod, 
+                   . ~ . + 
+                     la(age : viewenc, type = 'single') +
+                     la(viewcat : viewenc, type = 'single') +
+                     la(sex : viewcat, type = 'single') +
+                     la(viewcat : setting, type = 'single') +
+                     la(setting : viewenc, type = 'single') +
+                     la(sex : peabody_log, type = 'single')
+                   )
+
+let_mod <- update(base_mod, 
+                  let_betatransf ~ . + 
+                    la(site : age, type = 'single') +
+                    la(sex : age, type = 'single') +
+                    la(viewcat : peabody_log, type = 'single') +
+                    la(sex : viewcat, type = 'single')  +
+                    la(viewcat : setting, type = 'single') +
+                    la(setting : viewenc, type = 'single') +
+                    la(sex : peabody_log, type = 'single')
+                  )
+
+form_mod <- update(base_mod, 
+                   form_betatransf ~ . + 
+                     la(site : age, type = 'single') +
+                     la(sex : age, type = 'single') +
+                     la(viewcat : peabody_log, type = 'single') +
+                     la(age : viewenc, type = 'single')  +
+                     la(viewcat : viewenc, type = 'single') +
+                     la(viewcat : setting, type = 'single') +
+                     la(setting : viewenc, type = 'single') +
+                     la(sex : peabody_log, type = 'single')
+                   )
+
+numb_mod <- update(base_mod, 
+                   numb_betatransf ~ . + 
+                     la(site : age, type = 'single') +
+                     la(sex : age, type = 'single') +
+                     la(viewcat : peabody_log, type = 'single') +
+                     la(age : viewenc, type = 'single')  +
+                     la(viewcat : viewenc, type = 'single') +
+                     la(sex : viewcat, type = 'single')  +
+                     la(setting : viewenc, type = 'single') +
+                     la(sex : peabody_log, type = 'single')
+                   )
+
+relat_mod <- update(base_mod, 
+                    relat_betatransf ~ . + 
+                      la(site : age, type = 'single') + 
+                      la(viewcat : peabody_log, type = 'single') +
+                      la(viewcat : viewenc, type = 'single') +
+                      la(sex : viewcat, type = 'single')  +
+                      la(viewcat : setting, type = 'single') +
+                      la(sex : peabody_log, type = 'single')
+                    )
+
+clasf_mod <- update(base_mod, 
+                    clasf_betatransf ~ . + 
+                      la(site : age, type = 'single') +
+                      la(sex : age, type = 'single') +
+                      la(viewcat : peabody_log, type = 'single') +
+                      la(age : viewenc, type = 'single')  +
+                      la(viewcat : viewenc, type = 'single') +
+                      la(sex : viewcat, type = 'single')  +
+                      la(setting : viewenc, type = 'single')
+                    )
+
+mods <- list(body_mod, let_mod, form_mod, numb_mod, relat_mod, clasf_mod)
+```
+
+```{r}
+adj_models <- list()
+
+for (mod in mods) {
+  curr_adjmod <- bamlss(
+    mod, 
+    family = "beta", 
+    data = sesame_edit, 
+    optimizer = opt_lasso,
+    criterion = "BIC", 
+    nlambda = 100, 
+    multiple = FALSE
+    )
+  
+  adj_models[[f_lhs(mod)]] <- curr_adjmod
+}
+
+saveRDS(adj_models[[1]], file = "models/adjusted/body_adj_betamod.rds")
+saveRDS(adj_models[[2]], file = "models/adjusted/letters_adj_betamod.rds")
+saveRDS(adj_models[[3]], file = "models/adjusted/form_adj_betamod.rds")
+saveRDS(adj_models[[4]], file = "models/adjusted/numb_adj_betamod.rds")
+saveRDS(adj_models[[5]], file = "models/adjusted/relat_adj_betamod.rds")
+saveRDS(adj_models[[6]], file = "models/adjusted/clasf_adj_betamod.rds")
+```
+
+```{r}
+# Graveyard                          
+#la(site : viewcat, type = 'single')  # all
+#la(site : viewenc, type = 'single') # all
+#la(site : sex, type = 'single')  # all 
+#la(site : age, type = 'single') # body
+#la(sex : age, type = 'single') # body, relat
+#la(viewcat : peabody_log, type = 'single') # body 
+#la(age : viewenc, type = 'single')  # let, relat
+#la(viewcat : viewenc, type = 'single') #let
+#la(sex : viewcat, type = 'single')  # form
+#la(viewcat : setting, type = 'single') # numb, clasf
+#la(setting : viewenc, type = 'single') # relat
+#la(sex : peabody_log, type = 'single') # clasf
 ```
 
 **3. Results**
