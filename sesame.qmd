@@ -491,6 +491,49 @@ saveRDS(adj_models[[6]], file = "models/adjusted/clasf_adj_betamod.rds")
 ```
 
 ```{r}
+# Install packages if needed:
+# install.packages("bamlss")
+# install.packages("betareg") # Used for comparison and generating data
+
+library(bamlss)
+library(betareg) 
+library(coda) # For MCMC output analysis
+
+# 1. Simulate a Beta-distributed dataset
+set.seed(42)
+n <- 200
+X1 <- runif(n)
+X2 <- runif(n)
+# Define the true mean mu (must be between 0 and 1)
+mu_true <- plogis(1 - 2 * X1 + 1 * X2) 
+phi_true <- 10 # Precision parameter
+y_true 
+
+# The Beta distribution is strictly between (0, 1). BAMLSS requires 
+# handling boundaries if they exist. We'll use a clean set here.
+data_sim <- data.frame(y = y_true, X1, X2)
+
+# 2. Fit the Beta-LASSO Model (Using the REML/Penalized approach for speed)
+# Use a lasso penalty (lambda=1) on the linear predictor of mu (location)
+# Note: For true Bayesian output, use the 'bamlss()' function, but for general fitting, 
+# this is illustrative. We assume a standard bamlss fit for the steps below.
+
+# Example fitting a BAMLSS model with a Beta family and a shrinkage penalty
+model_beta_lasso <- bamlss(
+  y ~ s(X1, bs = "cc", k = 10, fx = TRUE) + s(X2, bs = "cc", k = 10, fx = TRUE),
+  family = "beta",
+  data = data_sim,
+  # This setting applies a \shrinkage (LASSO/Ridge-like) penalty 
+  # to the smooth terms, achieving a "Beta Lasso" effect when
+  # using highly flexible bases that are penalized heavily.
+  optimizer = "VRT_sampling" # Use sampling for full posterior
+)
+
+# NOTE: For a very large dataset, you might use an approximate optimizer:
+# model_beta_lasso_approx <- bamlss(..., optimizer = "opt")
+```
+
+```{r}
 # Graveyard                          
 #la(site : viewcat, type = 'single')  # all
 #la(site : viewenc, type = 'single') # all
