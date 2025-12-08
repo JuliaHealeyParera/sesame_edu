@@ -301,26 +301,6 @@ sesame_edit <- sesame |>
 write.csv(sesame_edit, 'sesame_edit.csv')
 ```
 
-Transformations:
-
--   peabody score is left-skewed, so log-transform
-
--   treat viewcat as ordinal variable
-
--   reorder site and treat as ordinal in this order
-
-    -   5
-
-    -   1
-
-    -   4
-
-    -   3
-
-    -   2
-
--   rename levels of sex, setting, and viewenc
-
 ```{r}
 # transformed response variables 
 resp <- c("body_betatransf","let_betatransf","form_betatransf",
@@ -561,12 +541,12 @@ clasf_final <- readRDS("models/final/clasf_fin_betamod.rds")
 ```{r}
 # BIC values
 
-print(paste('Body model BIC:', BIC(body_final)))
-print(paste('Letters model BIC:', BIC(letters_final)))
-print(paste('Form model BIC:', BIC(form_final)))
-print(paste('Numbers model BIC:', BIC(numb_final)))
-print(paste('Relational model BIC:', BIC(relat_final)))
-print(paste('Classification model BIC:', BIC(clasf_final)))
+print(paste('Body model BIC:', round(BIC(body_final),3)))
+print(paste('Letters model BIC:', round(BIC(letters_final),3)))
+print(paste('Form model BIC:', round(BIC(form_final),3)))
+print(paste('Numbers model BIC:', round(BIC(numb_final),3)))
+print(paste('Relational model BIC:', round(BIC(relat_final),3)))
+print(paste('Classification model BIC:', round(BIC(clasf_final),3)))
 
 rmse_body_final <- mean((predict(body_final, model = "mu", type = "parameter") - sesame_edit$body_betatransf)^2)^(1/2)
 rmse_letters_final <- mean((predict(letters_final, model = "mu", type = "parameter") - sesame_edit$let_betatransf)^2)^(1/2)
@@ -575,12 +555,12 @@ rmse_numb_final <- mean((predict(numb_final, model = "mu", type = "parameter") -
 rmse_relat_final <- mean((predict(relat_final, model = "mu", type = "parameter") - sesame_edit$relat_betatransf)^2)^(1/2)
 rmse_clasf_final <- mean((predict(clasf_final, model = "mu", type = "parameter") - sesame_edit$clasf_betatransf)^2)^(1/2)
 
-print(paste('Adjusted body model RMSE:', round(rmse_body_final, 3)))
-print(paste('Adjusted letters model RMSE:', round(rmse_letters_final,3)))
-print(paste('Adjusted form model RMSE:', round(rmse_form_final,3)))
-print(paste('Adjusted numbers model RMSE:', round(rmse_numb_final,3)))
-print(paste('Adjusted relational model RMSE:', round(rmse_relat_final,3)))
-print(paste('Adjusted classification model RMSE:', round(rmse_clasf_final,3)))
+print(paste('Final body model RMSE:', round(rmse_body_final, 3)))
+print(paste('Final letters model RMSE:', round(rmse_letters_final,3)))
+print(paste('Final form model RMSE:', round(rmse_form_final,3)))
+print(paste('Final numbers model RMSE:', round(rmse_numb_final,3)))
+print(paste('Final relational model RMSE:', round(rmse_relat_final,3)))
+print(paste('Final classification model RMSE:', round(rmse_clasf_final,3)))
 ```
 
 ```{r}
