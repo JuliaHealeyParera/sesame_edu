@@ -477,7 +477,7 @@ for (mod in mods) {
     mod, 
     family = "beta", 
     data = sesame_edit, 
-    optimizer = opt_lassSo,
+    optimizer = opt_lasso,
     criterion = "BIC", 
     nlambda = 100, 
     multiple = FALSE
@@ -495,14 +495,92 @@ saveRDS(adj_models[[6]], file = "models/adjusted/clasf_adj_betamod.rds")
 ```
 
 ```{r}
+#| eval: false
+
+### INITIAL MODEL TRAINING ERROR VALUES
+
+rmse_body_initial <- mean((predict(model_list[[1]], model = "mu", type = "parameter") - sesame_edit$body_betatransf)^2)^(1/2)
+rmse_letters_initial <- mean((predict(model_list[[2]], model = "mu", type = "parameter") - sesame_edit$let_betatransf)^2)^(1/2)
+rmse_form_initial <- mean((predict(model_list[[3]], model = "mu", type = "parameter") - sesame_edit$form_betatransf)^2)^(1/2)
+rmse_numb_initial <- mean((predict(model_list[[4]], model = "mu", type = "parameter") - sesame_edit$numb_betatransf)^2)^(1/2)
+rmse_relat_initial <- mean((predict(model_list[[5]], model = "mu", type = "parameter") - sesame_edit$relat_betatransf)^2)^(1/2)
+rmse_clasf_initial <- mean((predict(model_list[[6]], model = "mu", type = "parameter") - sesame_edit$clasf_betatransf)^2)^(1/2)
+
+print(paste('Initial body model RMSE:', round(rmse_body_initial, 3)))
+print(paste('Initial letters model RMSE:', round(rmse_letters_initial,3)))
+print(paste('Initial form model RMSE:', round(rmse_form_initial,3)))
+print(paste('Initial numbers model RMSE:', round(rmse_numb_initial,3)))
+print(paste('Initial relational model RMSE:', round(rmse_relat_initial,3)))
+print(paste('Initial classification model RMSE:', round(rmse_clasf_initial,3)))
+```
+
+```{r}
+#| eval: false
+
+### ADJUSTED MODEL TRAINING VALUES 
+
+rmse_body_adj <- mean((predict(adj_models[[1]], model = "mu", type = "parameter") - sesame_edit$body_betatransf)^2)^(1/2)
+rmse_letters_adj <- mean((predict(adj_models[[2]], model = "mu", type = "parameter") - sesame_edit$let_betatransf)^2)^(1/2)
+rmse_form_adj <- mean((predict(adj_models[[3]], model = "mu", type = "parameter") - sesame_edit$form_betatransf)^2)^(1/2)
+rmse_numb_adj <- mean((predict(adj_models[[4]], model = "mu", type = "parameter") - sesame_edit$numb_betatransf)^2)^(1/2)
+rmse_relat_adj <- mean((predict(adj_models[[5]], model = "mu", type = "parameter") - sesame_edit$relat_betatransf)^2)^(1/2)
+rmse_clasf_adj <- mean((predict(adj_models[[6]], model = "mu", type = "parameter") - sesame_edit$clasf_betatransf)^2)^(1/2)
+
+print(paste('Adjusted body model RMSE:', round(rmse_body_adj, 3)))
+print(paste('Adjusted letters model RMSE:', round(rmse_letters_adj,3)))
+print(paste('Adjusted form model RMSE:', round(rmse_form_adj,3)))
+print(paste('Adjusted numbers model RMSE:', round(rmse_numb_adj,3)))
+print(paste('Adjusted relational model RMSE:', round(rmse_relat_adj,3)))
+print(paste('Adjusted classification model RMSE:', round(rmse_clasf_adj,3)))
+```
+
+```{r}
+#| eval: false
+
+# Observation: all training errors are lower for adjusted models except for form and numbers, so rewrite adjusted models for initial form and number models and keep all others adjusted
+
+saveRDS(adj_models[[1]], file = "models/final/body_fin_betamod.rds")
+saveRDS(adj_models[[2]], file = "models/final/letters_fin_betamod.rds")
+saveRDS(model_list[[3]], file = "models/final/form_fin_betamod.rds")
+saveRDS(model_list[[4]], file = "models/final/numb_fin_betamod.rds")
+saveRDS(adj_models[[5]], file = "models/final/relat_fin_betamod.rds")
+saveRDS(adj_models[[6]], file = "models/final/clasf_fin_betamod.rds")
+```
+
+```{r}
 ### RUN THIS TO LOAD MODELS ###
 
-body_final <- readRDS("models/adjusted/body_adj_betamod.rds")
-letters_final <- readRDS( "models/adjusted/letters_adj_betamod.rds")
-form_final <- readRDS("models/adjusted/form_adj_betamod.rds")
-numb_final <- readRDS("models/adjusted/numb_adj_betamod.rds")
-relat_final <- readRDS("models/adjusted/relat_adj_betamod.rds")
-clasf_final <- readRDS("models/adjusted/clasf_adj_betamod.rds")
+body_final <- readRDS("models/final/body_fin_betamod.rds")
+letters_final <- readRDS( "models/final/letters_fin_betamod.rds")
+form_final <- readRDS("models/final/form_fin_betamod.rds")
+numb_final <- readRDS("models/final/numb_fin_betamod.rds")
+relat_final <- readRDS("models/final/relat_fin_betamod.rds")
+clasf_final <- readRDS("models/final/clasf_fin_betamod.rds")
+```
+
+```{r}
+# BIC values
+
+print(paste('Body model BIC:', BIC(body_final)))
+print(paste('Letters model BIC:', BIC(letters_final)))
+print(paste('Form model BIC:', BIC(form_final)))
+print(paste('Numbers model BIC:', BIC(numb_final)))
+print(paste('Relational model BIC:', BIC(relat_final)))
+print(paste('Classification model BIC:', BIC(clasf_final)))
+
+rmse_body_final <- mean((predict(body_final, model = "mu", type = "parameter") - sesame_edit$body_betatransf)^2)^(1/2)
+rmse_letters_final <- mean((predict(letters_final, model = "mu", type = "parameter") - sesame_edit$let_betatransf)^2)^(1/2)
+rmse_form_final <- mean((predict(form_final, model = "mu", type = "parameter") - sesame_edit$form_betatransf)^2)^(1/2)
+rmse_numb_final <- mean((predict(numb_final, model = "mu", type = "parameter") - sesame_edit$numb_betatransf)^2)^(1/2)
+rmse_relat_final <- mean((predict(relat_final, model = "mu", type = "parameter") - sesame_edit$relat_betatransf)^2)^(1/2)
+rmse_clasf_final <- mean((predict(clasf_final, model = "mu", type = "parameter") - sesame_edit$clasf_betatransf)^2)^(1/2)
+
+print(paste('Adjusted body model RMSE:', round(rmse_body_final, 3)))
+print(paste('Adjusted letters model RMSE:', round(rmse_letters_final,3)))
+print(paste('Adjusted form model RMSE:', round(rmse_form_final,3)))
+print(paste('Adjusted numbers model RMSE:', round(rmse_numb_final,3)))
+print(paste('Adjusted relational model RMSE:', round(rmse_relat_final,3)))
+print(paste('Adjusted classification model RMSE:', round(rmse_clasf_final,3)))
 ```
 
 ```{r}
