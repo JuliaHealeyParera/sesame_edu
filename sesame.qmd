@@ -67,6 +67,8 @@ library(patchwork)
 library(knitr)
 library(rlang)
 library(bamlss)
+library(tidyr)
+library(stringr)
 ```
 
 ```{r}
@@ -584,26 +586,23 @@ print(paste('Final classification model RMSE:', round(rmse_clasf_final,3)))
 
 **3.1 Final Selected Models**
 ```{r}
-library(dplyr)
-library(tidyr)
-library(stringr)
-library(knitr)
+
 
 models <- c("body_final","letters_final","form_final","numb_final","relat_final","clasf_final")
 
 extract_terms <- function(model_obj){
-  f <- formula(model_obj)
+  # defensive: ensure object exists
+  if (!exists(model_obj, envir = .GlobalEnv)) stop("Model not found: ", model_obj)
+  f <- formula(get(model_obj, envir = .GlobalEnv))
   fs <- paste(deparse(f), collapse = " ")
-  # Grab everything inside la(... , type = "single")
-  m <- str_match_all(fs, "la\\(([^,]+),\\s*type\\s*=\\s*\"single\"")
-  if(length(m[[1]]) == 0) return(character(0))
+  # Grab everything inside la(... , type = 'single' ) allowing single/double quotes and optional spaces
+  m <- str_match_all(fs, "la\\s*\\(\\s*([^,\\)]+)\\s*,\\s*type\\s*=\\s*['\"]?single['\"]?")
+  if (length(m[[1]]) == 0) return(character(0))
   terms <- str_trim(m[[1]][,2])
-  terms
+  unique(terms)
 }
 
-terms_by_model <- lapply(models, function(m){
-  extract_terms(get(m))
-})
+terms_by_model <- lapply(models, extract_terms)
 names(terms_by_model) <- models
 
 all_terms <- sort(unique(unlist(terms_by_model)))
