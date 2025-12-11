@@ -66,6 +66,7 @@ library(dplyr)
 library(patchwork)
 library(knitr)
 library(rlang)
+library(bamlss)
 ```
 
 ```{r}
@@ -582,6 +583,47 @@ print(paste('Final classification model RMSE:', round(rmse_clasf_final,3)))
 **3. Results**
 
 **3.1 Final Selected Models**
+```{r}
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(knitr)
+
+models <- c("body_final","letters_final","form_final","numb_final","relat_final","clasf_final")
+
+extract_terms <- function(model_obj){
+  f <- formula(model_obj)
+  fs <- paste(deparse(f), collapse = " ")
+  # Grab everything inside la(... , type = "single")
+  m <- str_match_all(fs, "la\\(([^,]+),\\s*type\\s*=\\s*\"single\"")
+  if(length(m[[1]]) == 0) return(character(0))
+  terms <- str_trim(m[[1]][,2])
+  terms
+}
+
+terms_by_model <- lapply(models, function(m){
+  extract_terms(get(m))
+})
+names(terms_by_model) <- models
+
+all_terms <- sort(unique(unlist(terms_by_model)))
+
+presence_tbl <- expand.grid(
+  Predictor = all_terms,
+  Model = models,
+  stringsAsFactors = FALSE
+) %>%
+  rowwise() %>%
+  mutate(Kept = ifelse(Predictor %in% terms_by_model[[Model]], "✔", "✖")) %>%
+  ungroup() %>%
+  pivot_wider(names_from = Model, values_from = Kept)
+
+kable(presence_tbl, caption = "Predictors Kept Across Final Models")
+
+```
+
+
+
 
 **3.3 Scientific Interpretation**
 
