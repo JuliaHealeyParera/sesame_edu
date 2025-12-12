@@ -628,6 +628,8 @@ cat("\n\n--- Predictor retention table ---\n")
 print(kable(presence_tbl, caption = "Predictors Kept Across Final Models"))
 
 ```
+[not sure if we wanna keep this format... taking up a lot of space but it's clearer to look at this way though]
+
 This table summarizes the predictors kept in each of the six final beta regression models following the lasso-based variable-selection procedure. Across all outcomes, the main effects of age, site, viewing frequency (viewcat), setting, viewing encouragement, and baseline vocabulary were consistently retained, indicating that these factors play a broadly influential role in children’s learning gains.
 
 Several interaction terms also appeared in all or nearly all models, ... [elaborate !!!]
