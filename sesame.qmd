@@ -585,43 +585,135 @@ print(paste('Final classification model RMSE:', round(rmse_clasf_final,3)))
 **3. Results**
 
 **3.1 Final Selected Models**
+
 ```{r}
 
+form_initial <- readRDS("models/initial/form_betamod.rds")
+numb_initial <- readRDS("models/initial/numb_betamod.rds")
 
-models <- c("body_final","letters_final","form_final","numb_final","relat_final","clasf_final")
+model_objects <- list(
+  body    = body_final,
+  letters = letters_final,
+  form    = form_initial,   
+  numb    = numb_initial,   
+  relat   = relat_final,
+  clasf   = clasf_final
+)
 
-extract_terms <- function(model_obj){
-  # defensive: ensure object exists
-  if (!exists(model_obj, envir = .GlobalEnv)) stop("Model not found: ", model_obj)
-  f <- formula(get(model_obj, envir = .GlobalEnv))
-  fs <- paste(deparse(f), collapse = " ")
-  # Grab everything inside la(... , type = 'single' ) allowing single/double quotes and optional spaces
-  m <- str_match_all(fs, "la\\s*\\(\\s*([^,\\)]+)\\s*,\\s*type\\s*=\\s*['\"]?single['\"]?")
-  if (length(m[[1]]) == 0) return(character(0))
-  terms <- str_trim(m[[1]][,2])
+extract_la_terms_safe <- function(mod) {
+  ftxt <- paste(deparse(formula(mod)), collapse = " ")
+  matches <- str_match_all(ftxt,
+      "la\\s*\\(\\s*([^,\\)]+)\\s*,\\s*type\\s*=\\s*['\"]?single['\"]?\\s*\\)")
+  if (length(matches) == 0 || nrow(matches[[1]]) == 0) return(character(0))
+  terms <- trimws(matches[[1]][,2])
   unique(terms)
 }
 
-terms_by_model <- lapply(models, extract_terms)
-names(terms_by_model) <- models
+terms_by_model <- lapply(model_objects, extract_la_terms_safe)
+for (nm in names(terms_by_model)) {
+  cat("\n---", nm, "(", length(terms_by_model[[nm]]), "terms) ---\n")
+  if (length(terms_by_model[[nm]]) == 0) cat("(no la(...) terms detected)\n")
+  else cat(paste0(terms_by_model[[nm]], collapse = "\n"), "\n")
+}
 
 all_terms <- sort(unique(unlist(terms_by_model)))
-
-presence_tbl <- expand.grid(
-  Predictor = all_terms,
-  Model = models,
-  stringsAsFactors = FALSE
-) %>%
-  rowwise() %>%
-  mutate(Kept = ifelse(Predictor %in% terms_by_model[[Model]], "✔", "✖")) %>%
-  ungroup() %>%
+presence_tbl <- expand.grid(Predictor = all_terms, Model = names(model_objects),
+                            stringsAsFactors = FALSE) |>
+  rowwise() |>
+  mutate(Kept = ifelse(Predictor %in% terms_by_model[[Model]], "✔", "✖")) |>
+  ungroup() |>
   pivot_wider(names_from = Model, values_from = Kept)
 
-kable(presence_tbl, caption = "Predictors Kept Across Final Models")
+cat("\n\n--- Predictor retention table ---\n")
+print(kable(presence_tbl, caption = "Predictors Kept Across Final Models"))
 
 ```
+This table summarizes the predictors kept in each of the six final beta regression models following the lasso-based variable-selection procedure. Across all outcomes, the main effects of age, site, viewing frequency (viewcat), setting, viewing encouragement, and baseline vocabulary were consistently retained, indicating that these factors play a broadly influential role in children’s learning gains.
+
+Several interaction terms also appeared in all or nearly all models, ... [elaborate !!!]
+
+Overall, this retention pattern shows that children’s improvement is shaped not only by individual predictors but also by how those predictors interact, justifying the inclusion of interaction terms and supporting a nuanced interpretation of Sesame Street’s educational impact.
+
+```{r}
+# age & viewing frequency interaction effect
+ggplot(sesame_edit, aes(x = age, y = improve_let, color = viewcat)) +
+  geom_point(alpha = 0.25, size = 1.2) +
+  geom_smooth(se = FALSE, size = 1.1) +
+  scale_color_manual(values = c(
+    "rare" = "thistle3",
+    "once_twice" = "lightskyblue3",
+    "three_five" = "darkseagreen3",
+    "over_five" = "#D8A7B1"
+  )) +
+  labs(
+    title = "Age × Viewing Frequency on Letter Improvement",
+    x = "Age (months)",
+    y = "Letter Improvement (%)",
+    color = "Viewing\nFrequency"
+  ) +
+  theme_minimal()
 
 
+```
+[Table shows `age:viewcat` is kept in all six final models, which is why I plotted it.] The effect of age depends on how often the child watches Sesame Street. GOOD!!! [pls elaborate thank youu]
+
+```{r}
+
+# setting & viewing frequency interaction effect
+ggplot(sesame_edit, aes(x = viewcat, y = improve_let, fill = setting)) +
+  geom_boxplot(outlier.color = "dimgrey") +
+  scale_fill_manual(values = c(
+    "home"   = "lightskyblue3",
+    "school" = "thistle3"
+  )) +
+  labs(
+    title = "Viewing Frequency × Setting on Letter Improvement",
+    x = "Viewing Frequency",
+    y = "Letter Improvement (%)",
+    fill = "Viewing\nSetting"
+  ) +
+  theme_minimal()
+
+
+```
+The effect of viewing frequency is different in school vs home settings. [elaborate!!!] ex: In lower viewing frequencies, home vs school differences are small.
+At moderate frequencies, differences widen. When watching at home, continues to improve as viewing frequency increases but not the same pattern for school.
+
+```{r}
+# sex & setting interaction effect
+ggplot(sesame_edit, aes(x = setting, y = improve_let, fill = sex)) +
+  geom_boxplot(outlier.color = "dimgrey", alpha = 0.75) +
+  scale_fill_manual(values = c(
+    "male"   = "lightskyblue3",
+    "female" = "thistle3"
+  )) +
+  labs(
+    title = "Setting × Sex on Letter Improvement",
+    x = "Viewing Setting",
+    y = "Letter Improvement (%)",
+    fill = "Sex"
+  ) +
+  theme_minimal()
+
+
+```
+tbh not sure if this is useful so can consider deleting
+
+```{r}
+# sex & viewing frequency interaction effect
+ggplot(sesame_edit, aes(x = viewcat, y = improve_let, fill = sex)) +
+  geom_boxplot(alpha = 0.75) +
+  scale_fill_manual(values = c("female" = "thistle3", "male" = "lightskyblue3")) +
+  labs(
+    title = "Sex × Viewing Frequency on Letter Improvement",
+    y = "Letter Improvement (%)",
+    x = "Viewing Frequency",
+    fill = "Sex"
+  ) +
+  theme_minimal()
+
+```
+Across all four plotted interactions, the patterns in the observed data mirror the model’s retained interaction terms, strengthening confidence that the fitted models capture meaningful variation in how demographic and contextual factors shape early learning outcomes.
 
 
 **3.3 Scientific Interpretation**
