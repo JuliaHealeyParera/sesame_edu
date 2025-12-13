@@ -882,6 +882,161 @@ Plot B illustrates the interaction between sex and viewing frequency on letter i
 
 Although these patterns suggest subtle differences in how viewing frequency relates to letter improvement by sex, the distributions substantially overlap across groups, indicating that sex-based differences are modest relative to the overall association between viewing frequency and letter improvement.
 
+```{r}
+get_clean_coefs <- function(model) {
+  cf <- coef(model)[, 1]            
+  cf <- cf[!grepl("alpha|tau21|Intercept", names(cf))]
+  return(cf)
+}
+
+body_coef <- get_clean_coefs(body_final)
+letters_coef <- get_clean_coefs(letters_final)
+form_coef <- get_clean_coefs(form_final)
+numb_coef <- get_clean_coefs(numb_final)
+relat_coef <- get_clean_coefs(relat_final)
+clasf_coef <- get_clean_coefs(clasf_final)
+
+
+body_letters <- outer(body_coef, letters_coef, `-`)
+body_form <- outer(body_coef, form_coef, `-`)
+body_numb <- outer(body_coef, numb_coef, `-`)
+body_relat <- outer(body_coef, relat_coef, `-`)
+body_clasf <- outer(body_coef, clasf_coef, `-`)
+
+letters_form <- outer(letters_coef, form_coef, `-`)
+letters_numb <- outer(letters_coef, numb_coef, `-`)
+letters_relat <- outer(letters_coef, relat_coef, `-`)
+letters_clasf <- outer(letters_coef, clasf_coef, `-`)
+
+form_numb <- outer(form_coef, numb_coef, `-`)
+form_relat <- outer(form_coef, relat_coef, `-`)
+form_clasf <- outer(form_coef, clasf_coef, `-`)
+
+numb_relat <- outer(numb_coef,  relat_coef, `-`)
+numb_clasf <- outer(numb_coef,  clasf_coef, `-`)
+
+relat_clasf <- outer(relat_coef, clasf_coef, `-`)
+```
+
+```{r}
+mat_list <- list(
+  body_letters = body_letters,
+  body_form    = body_form,
+  body_numb    = body_numb,
+  body_relat   = body_relat,
+  body_clasf   = body_clasf,
+  letters_form = letters_form,
+  letters_numb = letters_numb,
+  letters_relat= letters_relat,
+  letters_clasf= letters_clasf,
+  form_numb    = form_numb,
+  form_relat   = form_relat,
+  form_clasf   = form_clasf,
+  numb_relat   = numb_relat,
+  numb_clasf   = numb_clasf,
+  relat_clasf  = relat_clasf
+)
+
+# Conver tot numeric from list
+safe_to_numeric_matrix <- function(M, matrixname = NA_character_) {
+  if (is.data.frame(M)) M <- as.matrix(M)
+  if (is.atomic(M) && !is.matrix(M)) {
+    M <- as.matrix(M)
+  }
+  if (is.numeric(M)) return(M)
+
+  el_is_list <- any(vapply(M, is.list, logical(1)))
+  if (!el_is_list) {
+    # Not lists, attempt a vectorized numeric coercion (may produce NAs)
+    coerced <- suppressWarnings(as.numeric(M))
+    if (all(is.na(coerced) & !is.na(as.character(M)))) {
+      stop(sprintf("Matrix '%s' cannot be coerced to numeric.", matrixname))
+    }
+    return(matrix(coerced, nrow = nrow(M), ncol = ncol(M)))
+  }
+
+  n <- length(M)
+  coerced_vec <- numeric(n)
+  for (i in seq_len(n)) {
+    el <- M[i]
+    if (is.list(el)) {
+      val <- el[[1]]
+      if (is.atomic(val) && length(val) == 1) {
+        coerced_val <- suppressWarnings(as.numeric(val))
+        coerced_vec[i] <- coerced_val
+      } 
+    } else {
+      # not a list; coerce directly
+      coerced_val <- suppressWarnings(as.numeric(el))
+      coerced_vec[i] <- coerced_val
+    }
+  }
+
+  matrix(coerced_vec, nrow = nrow(M), ncol = ncol(M))
+}
+
+top_k_from_mat_abs <- function(M_raw, k = 3, matrixname = NA_character_) {
+  M <- safe_to_numeric_matrix(M_raw, matrixname = matrixname)
+
+  signed_all <- as.numeric(M)
+  abs_all <- abs(signed_all)
+  valid <- !is.na(abs_all)
+  
+  lin_idx_all <- seq_along(M)
+  ordered_lin <- lin_idx_all[valid][order(abs_all[valid], decreasing = TRUE)]
+  k_use <- min(k, length(ordered_lin))
+  idx_lin <- ordered_lin[seq_len(k_use)]
+  idx_mat <- arrayInd(idx_lin, dim(M))
+
+  rn <- rownames(M)
+  cn <- colnames(M)
+  row_names <- rn[idx_mat[,1]]
+  col_names <- cn[idx_mat[,2]]
+
+  signed_vals <- signed_all[idx_lin]
+  abs_vals_sel <- abs(signed_vals)
+
+  data.frame(
+    matrix_name = rep(matrixname, k_use),
+    row_index = idx_mat[,1],
+    col_index = idx_mat[,2],
+    row_name = row_names,
+    column_name = col_names,
+    absolutevalue_max = abs_vals_sel,
+    signed_max = signed_vals
+  )
+}
+
+top_k_table_for_list <- function(mat_list, k = 3) {
+  nm <- names(mat_list)
+  res_list <- lapply(nm, function(nm_i) {
+      top_k_from_mat_abs(mat_list[[nm_i]], k = k, matrixname = nm_i) 
+  })
+
+  result <- do.call(rbind, res_list)
+}
+
+
+result_table <- top_k_table_for_list(mat_list, k = 3)
+
+#### TABLE EXPLANATION: 
+# For each of the above matrices, return the top 3 largest values (in other words, return the entries for which the coefficients for the two models are the most different). Each row provides the matrix for which the max came from. In matrix body_letters, body - letters was performed. Each entry is then the amount greater (or smaller, if negative) the coefficient for body is than letters. Can change k if you want to get more or less entries.
+```
+
+```{r}
+# 1) Are all entries present and named?
+names(mat_list)
+
+# 2) What are the classes of each entry?
+sapply(mat_list, class)
+
+# 3) Are they matrices?
+sapply(mat_list, is.matrix)
+
+# 4) Dimensions (NA for non-matrix)
+sapply(mat_list, function(x) if (is.matrix(x)) paste(dim(x), collapse = "x") else NA)
+```
+
 **4. Conclusion**
 
 \pagebreak
