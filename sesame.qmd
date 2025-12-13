@@ -642,8 +642,8 @@ Overall, this retention pattern shows that children’s improvement is shaped no
 ```{r}
 # age & viewing frequency interaction effect
 ggplot(sesame_edit, aes(x = age, y = improve_let, color = viewcat)) +
-  geom_point(alpha = 0.25, size = 1.2) +
-  geom_smooth(se = FALSE, size = 1.1) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(se = FALSE) +
   scale_color_manual(values = c(
     "rare" = "thistle3",
     "once_twice" = "lightskyblue3",
@@ -654,6 +654,76 @@ ggplot(sesame_edit, aes(x = age, y = improve_let, color = viewcat)) +
     title = "Plot X: Age × Viewing Frequency on Letter Improvement",
     x = "Age (months)",
     y = "Letter Improvement (%)",
+    color = "Viewing\nFrequency"
+  ) +
+  theme_minimal()
+
+# age & viewing frequency interaction effect (Number Improvement)
+ggplot(sesame_edit, aes(x = age, y = improve_numb, color = viewcat)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(se = FALSE) +
+  scale_color_manual(values = c(
+    "rare" = "thistle3",
+    "once_twice" = "lightskyblue3",
+    "three_five" = "darkseagreen3",
+    "over_five" = "#D8A7B1"
+  )) +
+  labs(
+    title = "Plot X: Age × Viewing Frequency on Number Improvement",
+    x = "Age (months)",
+    y = "Number Improvement (%)",
+    color = "Viewing\nFrequency"
+  ) +
+  theme_minimal()
+
+
+ggplot(sesame_edit, aes(x = age, y = improve_form, color = viewcat)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(se = FALSE) +
+  scale_color_manual(values = c(
+    "rare" = "thistle3",
+    "once_twice" = "lightskyblue3",
+    "three_five" = "darkseagreen3",
+    "over_five" = "#D8A7B1"
+  )) +
+  labs(
+    title = "Age × Viewing Frequency on Form Improvement",
+    x = "Age (months)",
+    y = "Form Improvement (%)",
+    color = "Viewing\nFrequency"
+  ) +
+  theme_minimal()
+
+ggplot(sesame_edit, aes(x = age, y = improve_relat, color = viewcat)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(se = FALSE) +
+  scale_color_manual(values = c(
+    "rare" = "thistle3",
+    "once_twice" = "lightskyblue3",
+    "three_five" = "darkseagreen3",
+    "over_five" = "#D8A7B1"
+  )) +
+  labs(
+    title = "Age × Viewing Frequency on Relations Improvement",
+    x = "Age (months)",
+    y = "Relations Improvement (%)",
+    color = "Viewing\nFrequency"
+  ) +
+  theme_minimal()
+
+ggplot(sesame_edit, aes(x = age, y = improve_clasf, color = viewcat)) +
+  geom_point(alpha = 0.25) +
+  geom_smooth(se = FALSE) +
+  scale_color_manual(values = c(
+    "rare" = "thistle3",
+    "once_twice" = "lightskyblue3",
+    "three_five" = "darkseagreen3",
+    "over_five" = "#D8A7B1"
+  )) +
+  labs(
+    title = "Age × Viewing Frequency on Classification Improvement",
+    x = "Age (months)",
+    y = "Classification Improvement (%)",
     color = "Viewing\nFrequency"
   ) +
   theme_minimal()
@@ -684,6 +754,62 @@ ggplot(sesame_edit, aes(x = viewcat, y = improve_let, fill = setting)) +
   ) +
   theme_minimal()
 
+ggplot(sesame_edit, aes(x = viewcat, y = improve_numb, fill = setting)) +
+  geom_boxplot(outlier.color = "dimgrey") +
+  scale_fill_manual(values = c(
+    "home"   = "lightskyblue3",
+    "school" = "thistle3"
+  )) +
+  labs(
+    title = "Viewing Frequency × Setting on Number Improvement",
+    x = "Viewing Frequency",
+    y = "Number Improvement (%)",
+    fill = "Viewing\nSetting"
+  ) +
+  theme_minimal()
+
+ggplot(sesame_edit, aes(x = viewcat, y = improve_form, fill = setting)) +
+  geom_boxplot(outlier.color = "dimgrey") +
+  scale_fill_manual(values = c(
+    "home"   = "lightskyblue3",
+    "school" = "thistle3"
+  )) +
+  labs(
+    title = "Viewing Frequency × Setting on Form Improvement",
+    x = "Viewing Frequency",
+    y = "Form Improvement (%)",
+    fill = "Viewing\nSetting"
+  ) +
+  theme_minimal()
+
+ggplot(sesame_edit, aes(x = viewcat, y = improve_relat, fill = setting)) +
+  geom_boxplot(outlier.color = "dimgrey") +
+  scale_fill_manual(values = c(
+    "home"   = "lightskyblue3",
+    "school" = "thistle3"
+  )) +
+  labs(
+    title = "Viewing Frequency × Setting on Relations Improvement",
+    x = "Viewing Frequency",
+    y = "Relations Improvement (%)",
+    fill = "Viewing\nSetting"
+  ) +
+  theme_minimal()
+
+ggplot(sesame_edit, aes(x = viewcat, y = improve_clasf, fill = setting)) +
+  geom_boxplot(outlier.color = "dimgrey") +
+  scale_fill_manual(values = c(
+    "home"   = "lightskyblue3",
+    "school" = "thistle3"
+  )) +
+  labs(
+    title = "Viewing Frequency × Setting on Classification Improvement",
+    x = "Viewing Frequency",
+    y = "Classification Improvement (%)",
+    fill = "Viewing\nSetting"
+  ) +
+  theme_minimal()
+
 
 ```
 
@@ -701,6 +827,50 @@ ggplot(sesame_edit, aes(x = viewcat, y = improve_let, fill = sex)) +
   labs(
     title = "Plot B: Sex × Viewing Frequency on Letter Improvement",
     y = "Letter Improvement (%)",
+    x = "Viewing Frequency",
+    fill = "Sex"
+  ) +
+  theme_minimal()
+
+ggplot(sesame_edit, aes(x = viewcat, y = improve_numb, fill = sex)) +
+  geom_boxplot(alpha = 0.75) +
+  scale_fill_manual(values = c("female" = "thistle3", "male" = "lightskyblue3")) +
+  labs(
+    title = "Sex × Viewing Frequency on Number Improvement",
+    y = "Number Improvement (%)",
+    x = "Viewing Frequency",
+    fill = "Sex"
+  ) +
+  theme_minimal()
+
+ggplot(sesame_edit, aes(x = viewcat, y = improve_form, fill = sex)) +
+  geom_boxplot(alpha = 0.75) +
+  scale_fill_manual(values = c("female" = "thistle3", "male" = "lightskyblue3")) +
+  labs(
+    title = "Sex × Viewing Frequency on Form Improvement",
+    y = "Form Improvement (%)",
+    x = "Viewing Frequency",
+    fill = "Sex"
+  ) +
+  theme_minimal()
+
+ggplot(sesame_edit, aes(x = viewcat, y = improve_relat, fill = sex)) +
+  geom_boxplot(alpha = 0.75) +
+  scale_fill_manual(values = c("female" = "thistle3", "male" = "lightskyblue3")) +
+  labs(
+    title = "Sex × Viewing Frequency on Relations Improvement",
+    y = "Relations Improvement (%)",
+    x = "Viewing Frequency",
+    fill = "Sex"
+  ) +
+  theme_minimal()
+
+ggplot(sesame_edit, aes(x = viewcat, y = improve_clasf, fill = sex)) +
+  geom_boxplot(alpha = 0.75) +
+  scale_fill_manual(values = c("female" = "thistle3", "male" = "lightskyblue3")) +
+  labs(
+    title = "Sex × Viewing Frequency on Classification Improvement",
+    y = "Classification Improvement (%)",
     x = "Viewing Frequency",
     fill = "Sex"
   ) +
