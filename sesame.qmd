@@ -254,6 +254,10 @@ ggplot(sesame, aes(
   fill = factor(setting)
 )) +
   geom_boxplot() +
+  scale_fill_manual(
+    values = c("1" = "thistle3", "2" = "lightskyblue3"),
+    labels = c("1" = "Home", "2" = "School")
+  ) + 
   labs(
     title = "Interaction of Viewing Category and Educational Setting on Letter Improvement",
     x = "Viewing Category",
@@ -628,9 +632,10 @@ cat("\n\n--- Predictor retention table ---\n")
 print(kable(presence_tbl, caption = "Table X: Predictors Kept Across Final Models"))
 
 ```
+
 Table X summarizes the predictors kept in each of the six final beta regression models following the lasso-based variable-selection procedure. Across all outcomes, the main effects of age, site, viewing frequency (viewcat), viewing setting, viewing encouragement, and baseline vocabulary (Peabody score) were consistently retained, indicating that children's learning gains are influenced by a combination of developmental factors, socioeconomic context, and exposure to Sesame Street.
 
-Several interaction terms also appeared in all or nearly all models, most notably interactions involving age, viewing frequency, viewing setting, and baseline vocabulary. The repeated selection of these interactions suggests that the effect of Sesame Street exposure is not uniform across children, but instead depends on how viewing behavior interacts with a child's age, learning environment, and prior vocabulary level. Some interactions, such as those involving sex or encouragement, appear in most but not all models. This indicates that their importance varies by outcome domain. 
+Several interaction terms also appeared in all or nearly all models, most notably interactions involving age, viewing frequency, viewing setting, and baseline vocabulary. The repeated selection of these interactions suggests that the effect of Sesame Street exposure is not uniform across children, but instead depends on how viewing behavior interacts with a child's age, learning environment, and prior vocabulary level. Some interactions, such as those involving sex or encouragement, appear in most but not all models. This indicates that their importance varies by outcome domain.
 
 Overall, this retention pattern shows that children’s improvement is shaped not only by individual predictors but also by how those predictors interact, justifying the inclusion of interaction terms and supporting a nuanced interpretation of Sesame Street’s educational impact rather than a single average effect.
 
@@ -655,12 +660,12 @@ ggplot(sesame_edit, aes(x = age, y = improve_let, color = viewcat)) +
 
 
 ```
-Since the interaction between `age` and `viewing frequency` was retained in all six final models, we visualize this relationship using letter score improvement as a representative outcome. Plot X shows that the association between age and learning gains varies meaningfully across viewing frequency levels. 
 
-For children who watch Sesame Street rarely or once-twice per week, letter improvement generally increases with age, indicating steady gains as children grow older. In contrast, for children who watch the program three to five times or more per week, improvements rise with age up to approximately 55 months, after which gains begin to level off or decline. 
+Since the interaction between `age` and `viewing frequency` was retained in all six final models, we visualize this relationship using letter score improvement as a representative outcome. Plot X shows that the association between age and learning gains varies meaningfully across viewing frequency levels.
+
+For children who watch Sesame Street rarely or once-twice per week, letter improvement generally increases with age, indicating steady gains as children grow older. In contrast, for children who watch the program three to five times or more per week, improvements rise with age up to approximately 55 months, after which gains begin to level off or decline.
 
 This pattern suggests that the relationship between very frequent exposure and learning gains differs at older ages, indicating that increased exposure does not translate into consistently larger improvements across the entire age range.
-
 
 ```{r}
 
@@ -681,6 +686,7 @@ ggplot(sesame_edit, aes(x = viewcat, y = improve_let, fill = setting)) +
 
 
 ```
+
 The effect of viewing frequency on letter improvement differs by viewing setting. At low viewing frequencies, median improvements are similar for children watching at home and at school, indicating minimal differences between settings when exposure is limited.
 
 At moderate viewing frequencies, differences between settings widen, with school-based viewing associated with higher median improvements. At the highest viewing frequency, however, this pattern reverses: improvements continue to increase for children watching at home, while gains for children watching at school decline and become more variable.
@@ -701,10 +707,10 @@ ggplot(sesame_edit, aes(x = viewcat, y = improve_let, fill = sex)) +
   theme_minimal()
 
 ```
+
 Plot B illustrates the interaction between sex and viewing frequency on letter improvement. For both females and males, median letter score improvement generally increases with viewing frequency. Among females, improvement rises from rare to moderate viewing levels and then levels off at higher viewing frequencies, indicating relatively stable changes beyond moderate exposure. In contrast, among males, improvement shows a more consistent upward trend across viewing categories, with higher viewing frequencies associated with larger median improvements.
 
 Although these patterns suggest subtle differences in how viewing frequency relates to letter improvement by sex, the distributions substantially overlap across groups, indicating that sex-based differences are modest relative to the overall association between viewing frequency and letter improvement.
-
 
 **4. Conclusion**
 
