@@ -1089,7 +1089,7 @@ if (!is.null(chosen_lambda) && length(chosen_lambda)>0) {
 }
 ```
 
-
+idk if this is right? BIC was used to select the LASSO tuning parameter λ over a grid of values. The BIC curve for the letters model shows that the optimal λ is relatively large, indicating that strong regularization produces the best balance between goodness-of-fit and model complexity, with many weaker effects shrunk toward zero.
 
 ```{r}
 model_list <- list(
