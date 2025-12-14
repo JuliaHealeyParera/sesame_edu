@@ -1073,7 +1073,7 @@ mod <- if (exists("letters_adj_betamod")) {
 # Plot BIC vs log(lambda) for the mu component
 # (pathplot is provided by bamlss)
 pathplot(mod, which = "criterion", model = "mu",
-         main = "BIC vs log(lambda) — Letters model", xlab = "log(lambda)", ylab = "BIC")
+         main = "BIC vs. log(lambda) For The Letters model", xlab = "log(lambda)", ylab = "BIC")
 
 # try to mark the chosen lambda with a dashed vertical line if it's stored in the model
 chosen_lambda <- NULL
@@ -1388,8 +1388,7 @@ p_all6 <- ggplot(plot_df, aes(x=model, y=magnitude, fill=effect)) +
   geom_col(position=position_dodge(width=0.7), width=0.6, color="grey40") +
   scale_fill_manual(values=my_cols, name="Effect Type") +
   labs(
-    title="Relative Strength of Key Effects Across All Six Models",
-    subtitle="Bars show the largest |coefficient| per effect category (ViewFreq, Setting, \nViewFreq×Setting)",
+    title="Strength of Viewing Frequency x Setting Across Models",
     x="Outcome (model)",
     y="Coefficient magnitude (logit-scale)"
   ) +
@@ -1465,7 +1464,6 @@ p_viewenc <- ggplot(plot_df2, aes(x=model, y=magnitude, fill=effect)) +
   scale_fill_manual(values=my_cols2) +
   labs(
     title="Strength of Viewing Frequency × Encouragement Effects Across Models",
-    subtitle="Bars show the largest |coefficient| per effect category",
     x="Outcome (model)",
     y="Coefficient magnitude (logit-scale)"
   ) +
