@@ -1061,6 +1061,33 @@ pseudo_r2_table <- data.frame(
 pseudo_r2_table
 
 ```
+```{r}
+mod <- if (exists("letters_adj_betamod")) {
+  letters_adj_betamod
+} else if (exists("letters_final")) {
+  letters_final
+} else {
+  stop("No letters model object found in environment.")
+}
+
+# Plot BIC vs log(lambda) for the mu component
+# (pathplot is provided by bamlss)
+pathplot(mod, which = "criterion", model = "mu",
+         main = "BIC vs log(lambda) — Letters model", xlab = "log(lambda)", ylab = "BIC")
+
+# try to mark the chosen lambda with a dashed vertical line if it's stored in the model
+chosen_lambda <- NULL
+possible_names <- c("lambda", "lambda_mu", "lam", "opt.lambda")
+for (nm in possible_names) {
+  if (!is.null(mod[[nm]])) { chosen_lambda <- mod[[nm]]; break }
+  if (!is.null(mod$opt) && !is.null(mod$opt[[nm]])) { chosen_lambda <- mod$opt[[nm]]; break }
+}
+# pathplot usually draws the chosen lambda already; this is a safe extra marker
+if (!is.null(chosen_lambda) && length(chosen_lambda)>0) {
+  abline(v = log(chosen_lambda[1]), lty = 2, lwd = 1)
+  legend("topright", legend = "Selected λ (BIC)", lty = 2, bty = "n")
+}
+```
 
 
 
