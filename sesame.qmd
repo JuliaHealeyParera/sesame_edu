@@ -1036,6 +1036,529 @@ sapply(mat_list, is.matrix)
 # 4) Dimensions (NA for non-matrix)
 sapply(mat_list, function(x) if (is.matrix(x)) paste(dim(x), collapse = "x") else NA)
 ```
+Because beta regression does not have a traditional R², we computed a correlation-based pseudo-R², defined as the squared correlation between observed improvements and predicted means, to summarize overall model fit.
+```{r}
+get_pseudo_r2 <- function(model, y) {
+  mu_hat <- predict(model, model = "mu", type = "parameter")
+  r2 <- cor(mu_hat, y, use = "complete.obs")^2
+  return(r2)
+}
+
+# Compute pseudo-R² with simple names
+r2_body    <- get_pseudo_r2(body_final,   sesame_edit$body_betatransf)
+r2_letters <- get_pseudo_r2(letters_final,sesame_edit$let_betatransf)
+r2_forms   <- get_pseudo_r2(form_initial, sesame_edit$form_betatransf)
+r2_numbers <- get_pseudo_r2(numb_initial, sesame_edit$numb_betatransf)
+r2_relat   <- get_pseudo_r2(relat_final,  sesame_edit$relat_betatransf)
+r2_class   <- get_pseudo_r2(clasf_final,  sesame_edit$clasf_betatransf)
+
+# Put them in a nice, normal table
+pseudo_r2_table <- data.frame(
+  Outcome = c("Body", "Letters", "Forms", "Numbers", "Relational", "Classification"),
+  Pseudo_R2 = c(r2_body, r2_letters, r2_forms, r2_numbers, r2_relat, r2_class)
+)
+
+pseudo_r2_table
+
+```
+
+
+
+```{r}
+model_list <- list(
+  body    = body_final,       # adjusted
+  letters = letters_final,    # adjusted
+  form    = form_initial,     # INITIAL model
+  numb    = numb_initial,     # INITIAL model
+  relat   = relat_final,      # adjusted
+  clasf   = clasf_final       # adjusted
+)
+
+get_mu_coefs <- function(mod) {
+  cf <- tryCatch(coef(mod, model = "mu"), error = function(e) coef(mod))
+  
+  # cf can be a matrix, vector, or list$mu — handle all:
+  if (is.list(cf) && "mu" %in% names(cf)) {
+    mat <- cf$mu
+    vec <- as.numeric(mat[,1])
+    names(vec) <- rownames(mat)
+  } else if (is.matrix(cf)) {
+    vec <- as.numeric(cf[,1])
+    names(vec) <- rownames(cf)
+  } else if (is.numeric(cf) && !is.null(names(cf))) {
+    vec <- cf
+  } else {
+    stop("Could not extract coefficients for this model.")
+  }
+  
+  # Drop nuisance parameters
+  vec <- vec[!grepl("alpha|tau|Intercept", names(vec), ignore.case = TRUE)]
+  
+  return(vec)
+}
+
+# extract top 3 coefficients per model
+top3_list <- map(names(model_list), function(m) {
+  cf <- get_mu_coefs(model_list[[m]])
+  
+  # pick top 3 BY ABSOLUTE VALUE
+  top_terms <- names(sort(abs(cf), decreasing = TRUE))[1:3]
+  
+  tibble(
+    model = m,
+    term = top_terms,
+    estimate = cf[top_terms],
+    abs_est = abs(cf[top_terms])
+  )
+})
+
+top3_table <- bind_rows(top3_list)
+
+kable(top3_table, digits = 4,
+      caption = "Top 3 Most Influential Predictors in Each Final Model")
+
+```
+body model - Top effects are: viewcat × setting, site (disadv_rural)
+letters model - setting × encouragement, site × encouragement, sex × viewcat
+form model (INITIAL) - viewcat × encouragement, setting × vocabulary, setting × encouragement
+numb model (INITIAL) - site × vocabulary, encouragement × vocabulary, viewcat(over_five)
+relat model - viewcat × encouragement, setting × vocabulary, viewcat(once_twice)
+clasf model - sex × encouragement, sex × setting, viewcat × encouragement
+
+Body Model
+
+The strongest predictors in the body outcome involve interactions with viewing setting and SES site. Children from disadvantaged rural sites and children whose viewing frequency interacts with setting show the largest shifts in predicted improvement.
+
+Letters Model
+
+Letter improvement is most strongly influenced by contextual interactions, especially setting × encouragement and site × encouragement. Sex × viewing frequency also appears as a key effect, indicating different exposure patterns across boys and girls.
+
+Form Model (Initial)
+
+In the form outcome, the largest effects come from high-frequency viewing combined with encouragement, followed by setting × vocabulary and setting × encouragement interactions, reflecting strong environmental moderation.
+
+Numbers Model (Initial)
+
+Number improvement is driven primarily by vocabulary and SES effects: site × vocabulary and encouragement × vocabulary are the largest coefficients. High-frequency viewing (over five times per week) also plays a major role.
+
+Relational Model
+
+Relational-term improvement is most sensitive to viewcat × encouragement and setting × vocabulary, suggesting these skills benefit most from supportive contexts combined with exposure.
+
+Classification Model
+
+In the classification outcome, the largest coefficients involve sex-based interactions (sex × encouragement, sex × setting) and viewcat × encouragement, indicating that demographic and contextual factors play significant roles.
+
+TAKEAWAY (PARAGRAPH FORM): Across all six final models, several clear themes emerged. First, viewing setting consistently played a major role: interactions involving setting appeared among the strongest predictors in almost every outcome, indicating that home versus school viewing meaningfully changes how exposure translates into learning. Second, baseline vocabulary (Peabody score) moderated improvements across multiple domains, especially numbers, relational terms, and forms, suggesting that children with different vocabulary levels respond differently to Sesame Street exposure. Third, viewing frequency interacted with a wide range of predictors, including setting, sex, and encouragement, reinforcing that exposure effects are not uniform but depend on the child’s context. Fourth, SES (site) produced some of the largest coefficients in certain outcomes—particularly body knowledge, letters, and numbers—highlighting the role of socioeconomic background in shaping gains. Finally, sex-based interactions (especially with setting and encouragement) appeared prominently in relational and classification outcomes, suggesting subtle differences in how boys and girls respond to the learning environment and encouragement.
+
+Together, these findings show that the strongest drivers of improvement differ by domain but consistently involve interactions rather than simple main effects, underscoring that early learning outcomes depend on combinations of factors, not any single predictor.
+
+⭐ BIG TAKEAWAYS — BULLET POINT FORM (Concise)
+Strongest Overall Patterns
+
+Setting matters: interactions with setting show up as top predictors across outcomes.
+
+Vocabulary moderates improvement: Peabody-log interactions are large in multiple models.
+
+Viewing frequency interacts broadly: interacts with sex, setting, encouragement.
+
+SES differences are strong: site effects appear in the top predictors for several outcomes.
+
+Sex differences emerge in certain skills: strongest in classification and relational outcomes.
+
+Meaning
+
+The largest effects across models are interaction terms, not main effects.
+
+Improvements depend on who the child is, where they watch, and how often they watch, not just on exposure alone.
+
+Early-learning impacts differ across domains (letters vs numbers vs classification), showing no “one-size-fits-all” effect of Sesame Street.
+
+
+
+```{r}
+# grouped-bar: compare Setting, ViewFreq, and Setting×ViewFreq across 3 models
+library(dplyr)
+library(purrr)
+library(ggplot2)
+library(tibble)
+
+# ---- models to plot (chosen for diversity of patterns) ----
+models_to_use <- list(
+  Letters = letters_final,   # adjusted
+  Numbers = numb_initial,    # initial (full) model
+  Classif = clasf_final      # adjusted
+)
+
+# ---- safe coefficient extractor for mu (bamlss outputs) ----
+get_mu_coefs <- function(mod) {
+  cf <- tryCatch(coef(mod, model = "mu"), error = function(e) coef(mod))
+  # handle common shapes
+  if (is.list(cf) && "mu" %in% names(cf)) {
+    mat <- cf$mu
+    vec <- as.numeric(mat[,1])
+    names(vec) <- rownames(mat)
+  } else if (is.matrix(cf)) {
+    vec <- as.numeric(cf[,1])
+    names(vec) <- rownames(cf)
+  } else if (is.numeric(cf) && !is.null(names(cf))) {
+    vec <- cf
+  } else {
+    stop("Couldn't extract mu coefficients cleanly for a model.")
+  }
+  # drop nuisance
+  vec <- vec[!grepl("alpha|tau|Intercept", names(vec), ignore.case = TRUE)]
+  vec
+}
+
+# ---- function to summarize effect-group magnitudes per model ----
+summarize_three_effects <- function(coef_vec) {
+  names_vec <- names(coef_vec)
+  # ViewFreq (main): terms with "viewcat" but NOT "setting"
+  view_terms <- names_vec[grepl("viewcat", names_vec, ignore.case = TRUE) &
+                           !grepl("setting", names_vec, ignore.case = TRUE)]
+  # Setting (main): terms with "setting" but NOT "viewcat"
+  set_terms  <- names_vec[grepl("setting", names_vec, ignore.case = TRUE) &
+                           !grepl("viewcat", names_vec, ignore.case = TRUE)]
+  # Interaction: names that mention both
+  int_terms  <- names_vec[grepl("viewcat", names_vec, ignore.case = TRUE) &
+                           grepl("setting", names_vec, ignore.case = TRUE)]
+  # get max-abs (and track the signed value of that term for reference)
+  pick_max <- function(term_names) {
+    if (length(term_names) == 0) return(list(val = NA_real_, signed = NA_real_, term = NA_character_))
+    vals <- coef_vec[term_names]
+    idx <- which.max(abs(vals))
+    list(val = abs(vals[idx]), signed = vals[idx], term = term_names[idx])
+  }
+  v_view <- pick_max(view_terms)
+  v_set  <- pick_max(set_terms)
+  v_int  <- pick_max(int_terms)
+  tibble(
+    effect = c("Setting", "ViewFreq", "Interaction"),
+    magnitude = c(v_set$val, v_view$val, v_int$val),
+    signed = c(v_set$signed, v_view$signed, v_int$signed),
+    example_term = c(v_set$term, v_view$term, v_int$term)
+  )
+}
+
+# ---- build data frame across models ----
+plot_df <- imap_dfr(models_to_use, function(mod_obj, mod_name) {
+  coefs <- get_mu_coefs(mod_obj)
+  summ <- summarize_three_effects(coefs)
+  summ %>% mutate(model = mod_name) %>%
+    select(model, effect, magnitude, signed, example_term)
+})
+
+# If an effect is missing in a model, magnitude will be NA; replace NA with 0 for plotting clarity
+plot_df <- plot_df %>% mutate(magnitude = ifelse(is.na(magnitude), 0, magnitude))
+
+# ---- friendly ordering and labels ----
+plot_df$model <- factor(plot_df$model, levels = c("Letters", "Numbers", "Classif"))
+plot_df$effect <- factor(plot_df$effect, levels = c("ViewFreq", "Setting", "Interaction"))
+
+my_colors <- c(
+  "ViewFreq" = "#D8A7B1",     # viewing frequency (blue-ish/pastel you asked)
+  "Setting"  = "lightskyblue3", # setting
+  "Interaction" = "thistle3" # mixed purple for interaction
+)
+
+# ---- plot ----
+p_effects <- ggplot(plot_df, aes(x = model, y = magnitude, fill = effect)) +
+  geom_col(position = position_dodge(width = 0.7), width = 0.6, color = "grey40") +
+  scale_fill_manual(values = my_colors, name = "Effect Type") +
+  labs(
+    title = "Relative Strength of Key Effects by Outcome",
+    subtitle = "Each group = model; bars = |coefficient| (largest level) for ViewFreq, Setting, and their Interaction",
+    x = "Outcome (model)",
+    y = "Coefficient magnitude (|logit-scale|)",
+    caption = "Notes: For each effect group we plot the largest |coefficient| among the corresponding terms (e.g., the strongest 'viewcat' level). 'Numbers' uses the initial (full) model; Letters & Classif use adjusted models."
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    plot.subtitle = element_text(size = 11),
+    legend.position = "top"
+  )
+
+# show
+p_effects
+
+```
+ok now all 6
+```{r}
+library(dplyr)
+library(purrr)
+library(ggplot2)
+library(tibble)
+
+# ---- 6 models: adjusted + initial where required ----
+models_to_use <- list(
+  Body  = body_final,
+  Letters = letters_final,
+  Form = form_initial,      # initial
+  Numbers = numb_initial,   # initial
+  Relat = relat_final,
+  Classif = clasf_final
+)
+
+# ---- safe coefficient extractor for mu ----
+get_mu_coefs <- function(mod) {
+  cf <- tryCatch(coef(mod, model = "mu"), error = function(e) coef(mod))
+  
+  if (is.list(cf) && "mu" %in% names(cf)) {
+    vec <- as.numeric(cf$mu[,1])
+    names(vec) <- rownames(cf$mu)
+  } else if (is.matrix(cf)) {
+    vec <- as.numeric(cf[,1])
+    names(vec) <- rownames(cf)
+  } else {
+    vec <- cf
+  }
+  
+  vec <- vec[!grepl("alpha|tau|Intercept", names(vec), ignore.case = TRUE)]
+  vec
+}
+
+# ---- pick largest effect per group ----
+summarize_three_effects <- function(coef_vec) {
+  nms <- names(coef_vec)
+  # groups
+  view_terms <- nms[grepl("viewcat", nms) & !grepl("setting", nms)]
+  set_terms  <- nms[grepl("setting", nms) & !grepl("viewcat", nms)]
+  int_terms  <- nms[grepl("viewcat", nms) & grepl("setting", nms)]
+  
+  get_max <- function(terms) {
+    if (length(terms)==0) return(0)
+    abs(coef_vec[terms][which.max(abs(coef_vec[terms]))])
+  }
+  
+  tibble(
+    effect = c("ViewFreq", "Setting", "Interaction"),
+    magnitude = c(get_max(view_terms),
+                  get_max(set_terms),
+                  get_max(int_terms))
+  )
+}
+
+# ---- build df for all 6 models ----
+plot_df <- imap_dfr(models_to_use, function(mod, name) {
+  coefs <- get_mu_coefs(mod)
+  summarize_three_effects(coefs) %>%
+    mutate(model = name)
+})
+
+plot_df$model <- factor(plot_df$model, 
+                        levels = c("Body", "Letters", "Form", "Numbers", "Relat", "Classif"))
+
+plot_df$effect <- factor(plot_df$effect, 
+                         levels = c("ViewFreq", "Setting", "Interaction"))
+
+# ---- colors ----
+my_cols <- c("ViewFreq"="#D8A7B1", "Setting"="lightskyblue3", "Interaction"="thistle3")
+
+# ---- plot ----
+p_all6 <- ggplot(plot_df, aes(x=model, y=magnitude, fill=effect)) +
+  geom_col(position=position_dodge(width=0.7), width=0.6, color="grey40") +
+  scale_fill_manual(values=my_cols, name="Effect Type") +
+  labs(
+    title="Relative Strength of Key Effects Across All Six Models",
+    subtitle="Bars show the largest |coefficient| per effect category (ViewFreq, Setting, \nViewFreq×Setting)",
+    x="Outcome (model)",
+    y="Coefficient magnitude (logit-scale)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(face="bold", size=14),
+        legend.position="top")
+
+p_all6
+
+```
+```{r}
+# grouped-bar: compare ViewFreq, Encouragement, and Interaction across all 6 models
+models_to_use <- list(
+  Body  = body_final,
+  Letters = letters_final,
+  Form = form_initial,
+  Numbers = numb_initial,
+  Relat = relat_final,
+  Classif = clasf_final
+)
+
+get_mu_coefs <- function(mod) {
+  cf <- tryCatch(coef(mod, model = "mu"), error = function(e) coef(mod))
+  if (is.list(cf) && "mu" %in% names(cf)) {
+    vec <- as.numeric(cf$mu[,1])
+    names(vec) <- rownames(cf$mu)
+  } else if (is.matrix(cf)) {
+    vec <- as.numeric(cf[,1])
+    names(vec) <- rownames(cf)
+  } else vec <- cf
+  vec[!grepl("alpha|tau|Intercept", names(vec), ignore.case = TRUE)]
+}
+
+summarize_viewenc_effects <- function(coef_vec) {
+  nms <- names(coef_vec)
+  # main effects
+  vf_terms <- nms[grepl("viewcat", nms) & !grepl("viewenc", nms)]
+  ve_terms <- nms[grepl("viewenc", nms) & !grepl("viewcat", nms)]
+  # interaction
+  int_terms <- nms[grepl("viewcat", nms) & grepl("viewenc", nms)]
+  
+  get_max <- function(terms) {
+    if (length(terms)==0) return(0)
+    abs(coef_vec[terms][which.max(abs(coef_vec[terms]))])
+  }
+  
+  tibble(
+    effect = c("ViewFreq", "Encouragement", "Interaction"),
+    magnitude = c(
+      get_max(vf_terms),
+      get_max(ve_terms),
+      get_max(int_terms)
+    )
+  )
+}
+
+plot_df2 <- imap_dfr(models_to_use, function(mod, name) {
+  summ <- summarize_viewenc_effects(get_mu_coefs(mod))
+  summ %>% mutate(model = name)
+})
+
+plot_df2$model <- factor(plot_df2$model, 
+                         levels = c("Body","Letters","Form","Numbers","Relat","Classif"))
+plot_df2$effect <- factor(plot_df2$effect, 
+                          levels = c("ViewFreq","Encouragement","Interaction"))
+
+my_cols2 <- c("ViewFreq"="#D8A7B1", 
+              "Encouragement"="lightskyblue3",
+              "Interaction"="thistle3")
+
+p_viewenc <- ggplot(plot_df2, aes(x=model, y=magnitude, fill=effect)) +
+  geom_col(position=position_dodge(width=0.7), width=0.6, color="grey40") +
+  scale_fill_manual(values=my_cols2) +
+  labs(
+    title="Strength of Viewing Frequency × Encouragement Effects Across Models",
+    subtitle="Bars show the largest |coefficient| per effect category",
+    x="Outcome (model)",
+    y="Coefficient magnitude (logit-scale)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face="bold", size=14),
+    legend.position="top"
+  )
+
+p_viewenc
+
+```
+
+```{r}
+library(dplyr)
+library(purrr)
+library(ggplot2)
+library(tibble)
+
+# ---- 6 models: adjusted + initial where required ----
+models_to_use <- list(
+  Body  = body_final,
+  Letters = letters_final,
+  Form = form_initial,      # initial model
+  Numbers = numb_initial,   # initial model
+  Relat = relat_final,
+  Classif = clasf_final
+)
+
+# ---- Safe coefficient extractor for mu ----
+get_mu_coefs <- function(mod) {
+  cf <- tryCatch(coef(mod, model = "mu"), error = function(e) coef(mod))
+  
+  # handle different bamlss coefficient formats
+  if (is.list(cf) && "mu" %in% names(cf)) {
+    vec <- as.numeric(cf$mu[,1])
+    names(vec) <- rownames(cf$mu)
+  } else if (is.matrix(cf)) {
+    vec <- as.numeric(cf[,1])
+    names(vec) <- rownames(cf)
+  } else {
+    vec <- cf
+  }
+  
+  # remove nuisance parameters
+  vec <- vec[!grepl("alpha|tau|Intercept", names(vec), ignore.case = TRUE)]
+  vec
+}
+
+# ---- Summarize vocabulary, setting, and interaction effects ----
+summarize_setting_vocab_effects <- function(coef_vec) {
+  nms <- names(coef_vec)
+  
+  # main effect: vocabulary
+  vocab_terms <- nms[grepl("peabody_log", nms, ignore.case = TRUE) &
+                     !grepl("setting", nms, ignore.case = TRUE)]
+  
+  # main effect: setting
+  setting_terms <- nms[grepl("setting", nms, ignore.case = TRUE) &
+                       !grepl("peabody_log", nms, ignore.case = TRUE)]
+  
+  # interaction: setting × vocabulary
+  int_terms <- nms[grepl("setting", nms, ignore.case = TRUE) &
+                   grepl("peabody_log", nms, ignore.case = TRUE)]
+  
+  get_max <- function(terms) {
+    if (length(terms) == 0) return(0)
+    abs(coef_vec[terms][which.max(abs(coef_vec[terms]))])
+  }
+  
+  tibble(
+    effect = c("Vocabulary", "Setting", "Interaction"),
+    magnitude = c(
+      get_max(vocab_terms),
+      get_max(setting_terms),
+      get_max(int_terms)
+    )
+  )
+}
+
+# ---- Build df across all 6 models ----
+plot_df3 <- imap_dfr(models_to_use, function(mod, name) {
+  coefs <- get_mu_coefs(mod)
+  summarize_setting_vocab_effects(coefs) %>%
+    mutate(model = name)
+})
+
+plot_df3$model <- factor(plot_df3$model,
+                         levels = c("Body","Letters","Form","Numbers","Relat","Classif"))
+plot_df3$effect <- factor(plot_df3$effect,
+                          levels = c("Vocabulary","Setting","Interaction"))
+
+# ---- Colors ----
+my_cols3 <- c("Vocabulary"="#D8A7B1",
+              "Setting"="lightskyblue3",
+              "Interaction"="thistle3")
+
+# ---- Plot ----
+p_setting_vocab <- ggplot(plot_df3, aes(x=model, y=magnitude, fill=effect)) +
+  geom_col(position=position_dodge(width=0.7), width=0.6, color="grey40") +
+  scale_fill_manual(values=my_cols3, name="Effect Type") +
+  labs(
+    title="Strength of Setting × Vocabulary Effects Across Models",
+    subtitle="Bars show the largest |coefficient| per effect category (Vocabulary, Setting,\nSetting×Vocabulary)",
+    x="Outcome (model)",
+    y="Coefficient magnitude (logit-scale)"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face="bold", size=14),
+    legend.position="top"
+  )
+
+p_setting_vocab
+
+```
+
+
+
+
 
 **4. Conclusion**
 
