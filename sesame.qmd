@@ -1073,7 +1073,7 @@ mod <- if (exists("letters_adj_betamod")) {
 # Plot BIC vs log(lambda) for the mu component
 # (pathplot is provided by bamlss)
 pathplot(mod, which = "criterion", model = "mu",
-         main = "BIC vs log(lambda) — Letters model", xlab = "log(lambda)", ylab = "BIC")
+         main = "BIC vs. log(lambda) For The Letters model", xlab = "log(lambda)", ylab = "BIC")
 
 # try to mark the chosen lambda with a dashed vertical line if it's stored in the model
 chosen_lambda <- NULL
@@ -1388,8 +1388,7 @@ p_all6 <- ggplot(plot_df, aes(x=model, y=magnitude, fill=effect)) +
   geom_col(position=position_dodge(width=0.7), width=0.6, color="grey40") +
   scale_fill_manual(values=my_cols, name="Effect Type") +
   labs(
-    title="Relative Strength of Key Effects Across All Six Models",
-    subtitle="Bars show the largest |coefficient| per effect category (ViewFreq, Setting, \nViewFreq×Setting)",
+    title="Strength of Viewing Frequency x Setting Across Models",
     x="Outcome (model)",
     y="Coefficient magnitude (logit-scale)"
   ) +
@@ -1462,10 +1461,9 @@ my_cols2 <- c("ViewFreq"="#D8A7B1",
 
 p_viewenc <- ggplot(plot_df2, aes(x=model, y=magnitude, fill=effect)) +
   geom_col(position=position_dodge(width=0.7), width=0.6, color="grey40") +
-  scale_fill_manual(values=my_cols2) +
+  scale_fill_manual(values=my_cols2,name="Effect Type") +
   labs(
     title="Strength of Viewing Frequency × Encouragement Effects Across Models",
-    subtitle="Bars show the largest |coefficient| per effect category",
     x="Outcome (model)",
     y="Coefficient magnitude (logit-scale)"
   ) +
@@ -1569,7 +1567,6 @@ p_setting_vocab <- ggplot(plot_df3, aes(x=model, y=magnitude, fill=effect)) +
   scale_fill_manual(values=my_cols3, name="Effect Type") +
   labs(
     title="Strength of Setting × Vocabulary Effects Across Models",
-    subtitle="Bars show the largest |coefficient| per effect category (Vocabulary, Setting,\nSetting×Vocabulary)",
     x="Outcome (model)",
     y="Coefficient magnitude (logit-scale)"
   ) +
@@ -1583,6 +1580,35 @@ p_setting_vocab
 
 ```
 
+```{r}
+
+get_rmse <- function(model, y) {
+  preds <- predict(model, model = "mu", type = "parameter")
+  sqrt(mean((preds - y)^2, na.rm = TRUE))
+}
+
+rmse_body    <- get_rmse(body_final,   sesame_edit$body_betatransf)
+rmse_letters <- get_rmse(letters_final,sesame_edit$let_betatransf)
+rmse_forms   <- get_rmse(form_initial,  sesame_edit$form_betatransf)    
+rmse_numbers <- get_rmse(numb_initial,  sesame_edit$numb_betatransf)    
+rmse_relat   <- get_rmse(relat_final,  sesame_edit$relat_betatransf)
+rmse_class   <- get_rmse(clasf_final,  sesame_edit$clasf_betatransf)
+
+rmse_table <- data.frame(
+  Model = c("Body",
+            "Letters",
+            "Forms",
+            "Numbers",
+            "Relational",
+            "Classification"),
+  RMSE = c(rmse_body, rmse_letters, rmse_forms, rmse_numbers, rmse_relat, rmse_class)
+)
+
+kable(rmse_table, digits = 3, 
+      caption = "Training RMSE for Final Models")
+
+
+```
 
 
 
