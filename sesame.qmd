@@ -1284,7 +1284,7 @@ p_sexview3 <- ggplot(df_sexview3,
   scale_fill_manual(values=my_cols3,
                     breaks = c("Main1","Main2","Interaction"),
                     labels=c("Sex","View Frequency","Interaction")) +
-  labs(title="Strength of Sex × Viewcat Effects Across Models",
+  labs(title="Figure 6: Strength of Sex × Viewcat Effects Across Models",
        x="Model", y="Coefficient magnitude (logit-scale)") +
   theme_minimal(base_size=13) +
   theme(legend.position="top")
@@ -1349,7 +1349,7 @@ p_setpeabody3 <- ggplot(df_setpeabody3,
   scale_fill_manual(values=my_cols3,
                     breaks = c("Main1","Main2","Interaction"),
                     labels=c("Setting","Peabody","Interaction")) +
-  labs(title="Strength of Setting × Vocabulary Effects Across Models",
+  labs(title="Figure 7: Strength of Setting × Vocabulary Effects Across Models",
        x="Model", y="Coefficient magnitude (logit-scale)") +
   theme_minimal(base_size=13) +
   theme(legend.position="top")
