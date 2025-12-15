@@ -1129,13 +1129,13 @@ top3_list <- map(names(model_list), function(m) {
   cf <- get_mu_coefs(model_list[[m]])
   
   # pick top 3 BY ABSOLUTE VALUE
-  top_terms <- names(sort(cf, decreasing = TRUE))[1:3]
+  top_terms <- names(sort(abs(cf), decreasing = TRUE))[1:3]
   
   tibble(
     model = m,
     term = top_terms,
     estimate = cf[top_terms],
-    abs_est = cf[top_terms]
+    abs_est = abs(cf[top_terms])
   )
 })
 
