@@ -192,6 +192,7 @@ sesame |>
   pivot_longer(cols = everything()) |>
   ggplot(aes(x = name, y = value)) +
   geom_boxplot() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
   coord_flip() +
   labs(title = "Distributions of All Improvement Scores",
        x = "Skill Area",
