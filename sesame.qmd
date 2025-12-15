@@ -168,8 +168,11 @@ sesame |>
     number = mean(improve_numb),
     relation = mean(improve_relat),
     classify = mean(improve_clasf)
-  ) |> 
-  kable(digits = 2)
+  ) |>
+  kable(
+    digits = 2,
+    caption = "Table 1: Mean Improvement by Viewing Category"
+  )
 ```
 
 The largest average percent improvements occurred in the tests for forms (19.06%), letters (18.63%), and numbers (16.95%), indicating the **strongest learning growth in forms, letters and numbers after Sesame Street exposure**. In contrast, there were only modest improvements in body knowledge (12.06%) and classification skills (14.60%) test scores and weak improvement in relational terms test scores (10.25%). All test had large negative minimums (as low as -64.81%) and high maximums (all at least 58.33%), indicating that there was greater variability in the improvements or lack therof in these tested areas for various students.
