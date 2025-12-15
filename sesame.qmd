@@ -1184,10 +1184,12 @@ summarize_site_enc_effects <- function(coef_vec) {
   nms <- names(coef_vec)
 
   site_terms <- nms[grepl("site", nms, ignore.case=TRUE) &
-                    !grepl("enc|viewenc", nms, ignore.case=TRUE)]
+                    !grepl("enc|viewenc", nms, ignore.case=TRUE) &
+                     (!grepl("[:~]", nms)) ]
 
   enc_terms  <- nms[grepl("encour|viewenc|enc", nms, ignore.case=TRUE) &
-                    !grepl("site", nms, ignore.case=TRUE)]
+                    !grepl("site", nms, ignore.case=TRUE) &
+                     (!grepl("[:~]", nms)) ]
 
   int_terms  <- nms[grepl("site", nms, ignore.case=TRUE) &
                     grepl("enc|viewenc", nms, ignore.case=TRUE)]
@@ -1234,19 +1236,22 @@ p_siteenc3 <- ggplot(df_siteenc3,
 p_siteenc3
 
 ```
+
 ```{r}
 # sex x viewcat
 summarize_sex_view_effects <- function(coef_vec) {
   nms <- names(coef_vec)
 
-  sex_terms  <- nms[grepl("^sex|\\bsex\\b", nms, ignore.case=TRUE) &
-                    !grepl("viewcat", nms, ignore.case=TRUE)]
+  sex_terms  <- nms[ (grepl("^sex|\\bsex\\b", nms, ignore.case=TRUE)) &
+                     (!grepl("viewcat", nms, ignore.case=TRUE)) &
+                     (!grepl("[:~]", nms)) ]
 
-  view_terms <- nms[grepl("viewcat", nms, ignore.case=TRUE) &
-                    !grepl("sex", nms, ignore.case=TRUE)]
+  view_terms <- nms[ (grepl("viewcat", nms, ignore.case=TRUE)) &
+                     (!grepl("\\bsex\\b|^sex", nms, ignore.case=TRUE)) &
+                     (!grepl("[:~]", nms)) ]
 
-  int_terms  <- nms[grepl("sex", nms, ignore.case=TRUE) &
-                    grepl("viewcat", nms, ignore.case=TRUE)]
+  int_terms  <- nms[ grepl("sex", nms, ignore.case=TRUE) &
+                     grepl("viewcat", nms, ignore.case=TRUE) ]
 
   get_max <- function(terms) {
     if (length(terms)==0) return(0)
@@ -1262,6 +1267,7 @@ summarize_sex_view_effects <- function(coef_vec) {
     )
   )
 }
+
 
 df_sexview3 <- imap_dfr(models_to_use, \(mod,name)
   summarize_sex_view_effects(get_mu_coefs(mod)) |> mutate(model=name))
