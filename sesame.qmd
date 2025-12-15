@@ -197,7 +197,7 @@ sesame |>
   geom_boxplot() +
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
   coord_flip() +
-  labs(title = "Distributions of All Improvement Scores",
+  labs(title = "Figure 1: Distributions of All Improvement Scores",
        x = "Skill Area",
        y = "Score Improvement")
 
@@ -210,7 +210,7 @@ hist_peabody <- ggplot(sesame, aes(peabody)) +
     alpha = 0.8
   ) +
   labs(
-    title = "Distribution of Peabody Vocabulary Scores",
+    title = "Figure 2: Distribution of Peabody Vocabulary Scores",
     x = "Peabody Score",
     y = "Count"
   )
@@ -263,7 +263,7 @@ ggplot(sesame, aes(
     labels = c("1" = "Home", "2" = "School")
   ) + 
   labs(
-    title = "Interaction of Viewing Category and Educational Setting on Letter Improvement",
+    title = "Figure 3: Interaction of Viewing Category and Educational Setting on Letter Improvement",
     x = "Viewing Category",
     y = "Letter Improvement",
     fill = "Educational Setting"
