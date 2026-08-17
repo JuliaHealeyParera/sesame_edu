@@ -1040,7 +1040,9 @@ sapply(mat_list, is.matrix)
 # 4) Dimensions (NA for non-matrix)
 sapply(mat_list, function(x) if (is.matrix(x)) paste(dim(x), collapse = "x") else NA)
 ```
+
 Because beta regression does not have a traditional R², we computed a correlation-based pseudo-R², defined as the squared correlation between observed improvements and predicted means, to summarize overall model fit.
+
 ```{r}
 get_pseudo_r2 <- function(model, y) {
   mu_hat <- predict(model, model = "mu", type = "parameter")
@@ -1065,6 +1067,7 @@ pseudo_r2_table <- data.frame(
 pseudo_r2_table
 
 ```
+
 ```{r}
 mod <- if (exists("letters_adj_betamod")) {
   letters_adj_betamod
@@ -1243,6 +1246,13 @@ p_siteenc3
 ```
 
 ```{r}
+
+data.frame(
+  model = c('body', 'body', 'body', 'letters', 'letters', 'letters', 'form', 'form',)
+)
+```
+
+```{r}
 # sex x viewcat
 summarize_sex_view_effects <- function(coef_vec) {
   nms <- names(coef_vec)
@@ -1373,7 +1383,6 @@ p_setpeabody3
 
 ```
 
-
 ```{r}
 
 get_rmse <- function(model, y) {
@@ -1403,10 +1412,6 @@ kable(rmse_table, digits = 3,
 
 
 ```
-
-
-
-
 
 **4. Conclusion**
 
